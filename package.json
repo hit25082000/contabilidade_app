@@ -6,8 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "serve:ssr:contabilidade_App": "node dist/contabilidade-app/server/server.mjs"
+    "test": "ng test"
   },
   "private": true,
   "dependencies": {
@@ -20,7 +19,9 @@
     "@angular/platform-browser-dynamic": "^18.2.0",
     "@angular/platform-server": "^18.2.0",
     "@angular/router": "^18.2.0",
+    "@angular/service-worker": "^18.2.0",
     "@angular/ssr": "^18.2.12",
+    "@supabase/supabase-js": "^2.48.1",
     "express": "^4.18.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
@@ -39,6 +40,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "supabase": "^2.12.1",
     "typescript": "~5.5.2"
   }
 }
