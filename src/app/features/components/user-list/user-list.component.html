@@ -1,0 +1,9 @@
+<div *ngIf="userService.isLoading()">Carregando...</div>
+    <div *ngIf="userService.error()">Erro: {{ userService.error() }}</div>
+    <div *ngIf="userService.users()">
+      <h2>Detalhes do Usuário</h2>
+      <pre>{{ userService.users() | json }}</pre>
+      @for (user of userService.users(); track $index) {
+        {{user.id}}
+      }
+    </div>
