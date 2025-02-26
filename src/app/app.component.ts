@@ -30,27 +30,27 @@ export class AppComponent {
 
   async ngOnInit() {
 
-    // this.swPush.messages.subscribe((message) => {
-    //   const noticationMessage = message as NotificationMessage;
-    //   this.notificationService.showNotification('Notification', {body: noticationMessage.body});
-    // });
+    this.swPush.messages.subscribe((message) => {
+      const noticationMessage = message as NotificationMessage;
+      this.notificationService.showNotification('Notification', {body: noticationMessage.body});
+    });
 
-    // const hasUpdate = await this.updateService.checkForUpdate();
-    // if (hasUpdate) {
-    //   console.log('Atualização encontrada durante a inicialização');
-    // }
-    // this.cacheInspector.checkAssetsCache();
-    // this.renderDetector.detectRenderType();
+    const hasUpdate = await this.updateService.checkForUpdate();
+    if (hasUpdate) {
+      console.log('Atualização encontrada durante a inicialização');
+    }
+    this.cacheInspector.checkAssetsCache();
+    this.renderDetector.detectRenderType();
   }
 
   constructor() {
-    // effect(() => {
-    //   if (!this.connectivityService.isOnline()) {
-    //     this.notificationService.showNotification('Notificação', {body: 'Você está offline :('});
-    //     return;
-    //   }
+    effect(() => {
+      if (!this.connectivityService.isOnline()) {
+        this.notificationService.showNotification('Notificação', {body: 'Você está offline :('});
+        return;
+      }
 
-    //   this.notificationService.showNotification('Notificação', {body: 'Você está online :)'});
-    // });
+      this.notificationService.showNotification('Notificação', {body: 'Você está online :)'});
+    });
   }
 }
