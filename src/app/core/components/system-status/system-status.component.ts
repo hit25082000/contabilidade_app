@@ -256,8 +256,11 @@ export class SystemStatusComponent implements OnInit {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${environment.SUPABASE_FUNCTIONS_TOKEN}`,
-          'apikey': environment.SUPABASE_ANON_KEY
+          'apikey': environment.SUPABASE_ANON_KEY,
+          'origin': window.location.origin
         },
+        mode: 'cors',
+        credentials: 'omit',
         body: JSON.stringify(subscription)
       });
 
@@ -268,9 +271,9 @@ export class SystemStatusComponent implements OnInit {
 
       const result = await response.json();
       this.#pushNotificationStatus.set('Notificação enviada com sucesso!');
-      console.log('Resposta do servidor:', result);
+      console.log('[SystemStatus] Resposta do servidor:', result);
     } catch (error) {
-      console.error('Erro ao enviar notificação:', error);
+      console.error('[SystemStatus] Erro ao enviar notificação:', error);
       this.#pushNotificationStatus.set(`Erro: ${error}`);
     } finally {
       this.#loading.set(false);

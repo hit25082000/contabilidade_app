@@ -5,14 +5,22 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import * as webpush from "npm:web-push"
-import { corsHeaders } from '../_shared/cors.ts'
 
 // Configuração das credenciais VAPID
 const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY')!;
 const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY')!;
 
+// Configuração do CORS
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, origin',
+  'Access-Control-Max-Age': '86400',
+};
+
+// Inicialização do web-push
 webpush.setVapidDetails(
-  'mailto:seu-email@exemplo.com', // Substitua pelo seu email
+  'mailto:shadow25082000@gmail.com',
   VAPID_PUBLIC_KEY,
   VAPID_PRIVATE_KEY
 );
@@ -20,24 +28,40 @@ webpush.setVapidDetails(
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    console.log('[Edge Function] Requisição OPTIONS recebida (preflight)');
+    return new Response(null, { 
+      status: 204, 
+      headers: corsHeaders 
+    });
   }
 
   try {
     // Verificar o método
     if (req.method !== 'POST') {
-      throw new Error('Method not allowed');
+      return new Response(
+        JSON.stringify({ error: 'Method not allowed' }), 
+        { 
+          status: 405,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders
+          }
+        }
+      );
     }
 
     // Validar o token de autorização
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const apiKey = req.headers.get('apikey');
+
+    if (!authHeader || !authHeader.startsWith('Bearer ') || !apiKey) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }), 
         { 
           status: 401, 
           headers: {
-            corsHeaders
+            'Content-Type': 'application/json',
+            ...corsHeaders
           }
         }
       );
@@ -47,17 +71,26 @@ Deno.serve(async (req) => {
     const subscription = await req.json();
 
     if (!subscription) {
-      throw new Error('No subscription was provided');
+      return new Response(
+        JSON.stringify({ error: 'No subscription was provided' }), 
+        { 
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders
+          }
+        }
+      );
     }
 
     // Enviar a notificação push
     const payload = JSON.stringify({
       title: 'Nova Notificação',
       body: 'Você tem uma nova mensagem!',
-      icon: '/assets/icons/icon-128x128.png', // Ajuste para o caminho do seu ícone
-      badge: '/assets/icons/badge-72x72.png', // Opcional: ícone para badge
+      icon: '/assets/icons/icon-128x128.png',
+      badge: '/assets/icons/badge-72x72.png',
       data: {
-        url: '/' // URL para redirecionar quando clicar na notificação
+        url: '/'
       }
     });
 
@@ -67,18 +100,21 @@ Deno.serve(async (req) => {
       JSON.stringify({ message: 'Notificação enviada com sucesso!' }), 
       { 
         headers: {
-          corsHeaders
+          'Content-Type': 'application/json',
+          ...corsHeaders
         }
       }
     );
 
   } catch (error) {
+    console.error('Erro na Edge Function:', error);
     return new Response(
       JSON.stringify({ error: error.message }), 
       { 
         status: 500,
         headers: {
-          corsHeaders
+          'Content-Type': 'application/json',
+          ...corsHeaders
         }
       }
     );

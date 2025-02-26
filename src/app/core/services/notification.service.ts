@@ -15,16 +15,14 @@ export class NotificationService {
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
   readonly VAPID_PUBLIC_KEY = environment.PUBLIC_VAPID_KEY;
-  private baseUrl = `${environment.SUPABASE_URL_HOM}/functions/v1/push-notification`;
-
+  private baseUrl = `${environment.SUPABASE_URL}/functions/v1/push-notification`;
+    
   private get headers(): HttpHeaders {
-    const headers = new HttpHeaders({
+    return new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${environment.SUPABASE_FUNCTIONS_TOKEN}`,
-      'apikey': environment.SUPABASE_ANON_KEY
+      'apikey': environment.SUPABASE_ANON_KEY,
     });
-    console.log('[NotificationService] Headers configurados:', headers);
-    return headers;
   }
 
   constructor() {
@@ -142,7 +140,10 @@ export class NotificationService {
     console.log('[NotificationService] Enviando subscrição para o servidor:', {
       url: this.baseUrl,
       subscription,
-      headers: this.headers
+      headers: this.headers.keys().reduce((acc, key) => ({
+        ...acc,
+        [key]: this.headers.get(key)
+      }), {})
     });
 
     return this.http.post<NotificationMessage>(
@@ -155,7 +156,10 @@ export class NotificationService {
       }
     ).pipe(
       tap(response => {
-        console.log('[NotificationService] Headers da resposta:', response.headers);
+        console.log('[NotificationService] Headers da resposta:', {
+          keys: response.headers.keys(),
+          values: response.headers.keys().map(key => `${key}: ${response.headers.get(key)}`)
+        });
         console.log('[NotificationService] Status da resposta:', response.status);
         console.log('[NotificationService] Corpo da resposta:', response.body);
       }),
@@ -164,7 +168,7 @@ export class NotificationService {
         count: 3,
         delay: (error, retryCount) => {
           console.log(`[NotificationService] Tentativa ${retryCount} de 3`);
-          return timer(1000 * retryCount); // Espera progressiva: 1s, 2s, 3s
+          return timer(1000 * retryCount);
         }
       }),
       catchError(error => {
@@ -173,7 +177,10 @@ export class NotificationService {
           status: error.status,
           message: error.message,
           response: error.error,
-          headers: error.headers?.keys().map((key:any) => `${key}: ${error.headers?.get(key)}`)
+          headers: error.headers?.keys().reduce((acc : any, key: any) => ({
+            ...acc,
+            [key]: error.headers?.get(key)
+          }), {})
         });
         return throwError(() => error);
       })
