@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthStore } from '../../../core/auth/service/auth.store';
@@ -31,6 +31,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
       nzWidth="256px"
       nzBreakpoint="md"
       [(nzCollapsed)]="isCollapsed"
+      (nzCollapsedChange)="collapsedChange.emit($event)"
       [nzTrigger]="null">
       <div class="sidebar-logo">
         <a href="javascript:void(0)">
@@ -95,20 +96,28 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
   `,
   styles: [`
     .menu-sidebar {
-      position: relative;
-      z-index: 10;
-      min-height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 1000;
+      height: 100vh;
       box-shadow: 2px 0 6px rgba(0,21,41,.35);
+      overflow-y: auto;
+      background: #001529;
+      transition: all 0.2s;
     }
     
     .sidebar-logo {
-      position: relative;
+      position: sticky;
+      top: 0;
       height: 64px;
       padding-left: 24px;
       overflow: hidden;
       line-height: 64px;
       background: #001529;
       transition: all .3s;
+      z-index: 1001;
     }
     
     .sidebar-logo a {
@@ -124,11 +133,40 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
       font-weight: 600;
       font-size: 18px;
       vertical-align: middle;
+      transition: opacity 0.2s;
     }
     
     .sidebar-logo span[nz-icon] {
       color: #fff;
       font-size: 24px;
+    }
+
+    :host {
+      display: block;
+      height: 100%;
+    }
+
+    nz-sider {
+      height: 100vh;
+    }
+
+    ul[nz-menu] {
+      height: calc(100vh - 64px);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    @media (max-width: 768px) {
+      .menu-sidebar {
+        position: absolute;
+        transform: translateX(-100%);
+        transition: transform 0.2s;
+      }
+
+      :host-context(.sidebar-collapsed) .menu-sidebar {
+        transform: translateX(0);
+        width: 0;
+      }
     }
   `]
 })
@@ -137,6 +175,7 @@ export class ClienteSidebarComponent {
   
   // Input para controlar o estado de colapso do sidebar
   @Input() isCollapsed = false;
+  @Output() collapsedChange = new EventEmitter<boolean>();
   
   // Signals do AuthStore
   isContador = this.authStore.isContador;
