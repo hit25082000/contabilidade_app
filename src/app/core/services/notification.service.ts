@@ -15,7 +15,7 @@ export class NotificationService {
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
   readonly VAPID_PUBLIC_KEY = environment.PUBLIC_VAPID_KEY;
-  private baseUrl = `${environment.SUPABASE_URL}/functions/v1/push-notification`;
+  private baseUrl = environment.PUSH_NOTIFICATIONS_URL;
     
   private get headers(): HttpHeaders {
     return new HttpHeaders({

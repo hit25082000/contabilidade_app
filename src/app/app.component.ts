@@ -6,16 +6,13 @@ import { SwPush } from '@angular/service-worker';
 import { UpdateService } from './core/services/update.service';
 import { NotificationMessage } from './core/models/notification-message';
 import { CacheInspectorService } from './core/services/cache-inspector.service';
-import { UserService } from './features/services/user.service';
-import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { RenderDetectorService } from './core/services/render-detector.service';
-import { LoadingService } from './core/services/loading.service';
+import { Meta, Title } from '@angular/platform-browser';
 import { LoadingOverlayComponent } from "./core/components/loading/loading.component";
 
 @Component({
     selector: 'app-root',
-    imports: [RouterOutlet, CommonModule],
+    imports: [RouterOutlet, CommonModule, LoadingOverlayComponent],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss',
 })
@@ -25,23 +22,8 @@ export class AppComponent {
   cacheInspector = inject(CacheInspectorService)
   updateService = inject(UpdateService)
   swPush = inject(SwPush)
-  renderDetector = inject(RenderDetectorService)
-  title = 'contabilidade_App';
-
-  async ngOnInit() {
-
-    this.swPush.messages.subscribe((message) => {
-      const noticationMessage = message as NotificationMessage;
-      this.notificationService.showNotification('Notification', {body: noticationMessage.body});
-    });
-
-    const hasUpdate = await this.updateService.checkForUpdate();
-    if (hasUpdate) {
-      console.log('Atualização encontrada durante a inicialização');
-    }
-    this.cacheInspector.checkAssetsCache();
-    this.renderDetector.detectRenderType();
-  }
+  title = inject(Title)
+  meta = inject(Meta)   
 
   constructor() {
     effect(() => {
@@ -52,5 +34,30 @@ export class AppComponent {
 
       this.notificationService.showNotification('Notificação', {body: 'Você está online :)'});
     });
+  }
+
+  async ngOnInit() {
+    this.setPageMeta();
+    this.swPush.messages.subscribe((message) => {
+      const noticationMessage = message as NotificationMessage;
+      this.notificationService.showNotification('Notification', {body: noticationMessage.body});
+    });
+
+    const hasUpdate = await this.updateService.checkForUpdate();
+    if (hasUpdate) {
+      console.log('Atualização encontrada durante a inicialização');
+    }
+    this.cacheInspector.checkAssetsCache();
+  }
+
+  setPageMeta():void {
+    this.title.setTitle('Deleite - a melhor experiência de sabores!');
+    this.meta.addTags([
+      { name: 'description', content: 'Descubra os melhores milkshakes, sorvetes e smoothies na Deleite. Sabor e qualidade em cada produto!' },
+      { property: 'og:title', content: 'Deleite - a melhor experiência de sabores!' },
+      { property: 'og:description', content: 'Descubra os melhores milkshakes, sorvetes e smoothies na Deleite. Sabor e qualidade em cada produto!' },
+      { property: 'og:image', content: 'assets/images/logo.png' },
+      { name: 'twitter:card', content: 'summary_large_image' }
+    ]);
   }
 }

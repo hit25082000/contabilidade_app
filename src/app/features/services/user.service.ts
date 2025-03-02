@@ -5,16 +5,12 @@ import { forkJoin, from, Observable, of } from 'rxjs';
 import { rxResource } from '@angular/core/rxjs-interop'
 import { HttpClient } from '@angular/common/http';
 import { User } from '../models/user';
-
-export const supabase = createClient(
-  environment.SUPABASE_URL,
-  environment.SUPABASE_ADMIN_KEY,
-  {
-    auth: { persistSession: false, autoRefreshToken: false },
-  }
-);
+import { DatabaseService } from '../../core/services/database.service';
 
 export class UserService {
+  database = inject(DatabaseService)
+  table = signal("User")
+
   private selectedUserId = signal<number | null>(null)
 
   constructor() {  
@@ -45,28 +41,10 @@ export class UserService {
   }
 
   private getUserById(id: number): Observable<User | null> {
-    return from(
-      supabase
-        .from('User')
-        .select('*')
-        .eq('id', id)
-        .single()
-        .then(({ data, error }) => {
-          if (error) throw error;
-          return data;
-        })
-    );
+    return from(this.database.getByID(this.table(),id));
   }
 
   private getUsers():Observable<User[]> {
-    return from(
-          supabase
-            .from('User')
-            .select('*')
-            .then(({ data: User, error}) => {
-      if (error)throw new Error(error.message);
-      return User || []
-            })
-        )
+    return from(this.database.getAll(this.table()))
       }
     }

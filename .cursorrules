@@ -1,0 +1,52 @@
+# PROJECT OVERVIEW
+- Um aplicativo de contabilidade para que um contador possa enviar documentos para seus clientes e que os clientes possam registrar horario de plantão feito para registrar seus dados e enviar relatorios ao contador.
+
+# PERSONALITY
+- tecnico e formal mas tambem intuitivo aos usuarios
+
+# TECH STACK
+- Frontend Tech Stack (UI,UX)
+    - HTML, CSS, JavaScript
+    - Angular 19.1
+    - PWA
+    - Push notification
+    - Service Worker
+- Backend Tech Stack
+    - Supabase Database
+    - Suabase Functions
+- Aditional features
+    - any PDF lib
+    - Any calendar 
+    - Governamental integrations
+- Version Control Integration
+    - GIT
+    - GIT-HUB
+
+# ERROR FIXING PROCESS
+step 1: explain the error and his impact in the project 
+
+# BUILDING PROCESS
+
+# Our .env variables
+/src/environments/environment.ts
+/src/environments/environment.development.ts
+
+# CURRENT FILE STRUCTURE
+tree -L -a -I 'node_modules|.git|.vscode|.idea|.angular
+
+# GITHUB PUSH PROCESS
+git add .
+git commit -m "git granch diffs"
+git push
+
+# IMPORTANT
+- Este é um app com foco mobile first e PWA deve ser feito para suporte em telas menores de até 400px e responsivo a desktop, crie componentes utilizando o principio de responsabilidade unica e de prioridade a legibilidade, utilize novas features do angular 19 signals para gerenciamento de estado, a aplicação não usara zoneJS sendo renderizada somente por signals e CRIE COMO UM ENGENHEIRO 10x mais experiente.
+- Quero que construa o app de maneira abtrata para que por exemplo eu possa reutilizar serviços e componentes, por exemplo informaçoes do supabase não devem ser inseridas diretamente, quero poder trocar de supabase para firebase no sistema sem quebra de regras por isso use metodos de mesmo nome para que a camada de negocio não tenha conhecimento da integração no caso supabase e que seja possivel substituir apenas um arquivo do supabase por outro do firebase.
+- Não utilize modulos, somente standalone
+
+# OTHER CONTEXT
+- O app deve ter segurança forte por trata de dados sensiveis e integrações governamentais para buscar dados dos clientes e transmitilos ao contados.
+
+# COMMENTS
+- Tenha certeza de SEMPRE incluir comentarios no seu codigo
+- Não apague comentarios anteriores somente se não forem mais necessarios

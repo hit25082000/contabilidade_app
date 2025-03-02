@@ -11,5 +11,4 @@ import { CommonModule } from '@angular/common';
 })
 export class UserListComponent {
   userService = inject(UserService)
-
 }
