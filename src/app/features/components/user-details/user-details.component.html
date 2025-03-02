@@ -1,6 +1,0 @@
-<div *ngIf="userService.isLoading()">Carregando...</div>
-    <div *ngIf="userService.error()">Erro: {{ userService.error() }}</div>
-    <div *ngIf="userService.user()">
-      <h2>Detalhes do Usuário</h2>
-      <pre>{{ userService.user() | json }}</pre>  
-    </div>

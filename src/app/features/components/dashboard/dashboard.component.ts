@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { AuthStore } from '../../core/store/auth.store';
+import { AuthStore } from '../../../core/auth/service/auth.store';
 
 // Importações do NG-ZORRO
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
@@ -25,7 +25,6 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     NzLayoutModule,
     NzBreadCrumbModule,
     NzCardModule,

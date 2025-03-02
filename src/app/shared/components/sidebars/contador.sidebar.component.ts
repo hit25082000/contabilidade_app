@@ -1,7 +1,7 @@
 import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { AuthStore } from '../../../core/store/auth.store';
+import { AuthStore } from '../../../core/auth/service/auth.store';
 
 // Importações do NG-ZORRO
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
@@ -14,7 +14,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
  * @class SidebarComponent
  */
 @Component({
-  selector: 'app-sidebar',
+  selector: 'app-contador-sidebar',
   standalone: true,
   imports: [
     CommonModule,
@@ -132,7 +132,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
     }
   `]
 })
-export class SidebarComponent {
+export class ContadorSidebarComponent {
   private authStore = inject(AuthStore);
   
   // Input para controlar o estado de colapso do sidebar

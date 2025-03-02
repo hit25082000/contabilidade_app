@@ -1,7 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 import { createClient, SupabaseClient, User, Session } from '@supabase/supabase-js';
-import { environment } from '../../../environments/environment';
-import { IAuthProvider } from '../interfaces/auth-provider.interface';
+import { environment } from '../../../../environments/environment';
+import { IAuthProvider } from '../models/auth-provider.interface';
+import { IUser } from '../models/user.interface';
 
 /**
  * Serviço de autenticação usando Supabase
@@ -116,12 +117,14 @@ export class AuthSupabaseService  {
                 password 
             });
             
+            console.log(data)
+
             if (error) {
                 this.errorSignal.set(`Erro ao fazer login: ${error.message}`);
                 throw error;
             }
             
-            return data;
+            return data.user;
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
             this.errorSignal.set(`Erro ao fazer login: ${errorMessage}`);

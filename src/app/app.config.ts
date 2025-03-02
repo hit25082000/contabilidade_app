@@ -5,11 +5,11 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { pt_BR, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { registerLocaleData } from '@angular/common';
 import pt from '@angular/common/locales/pt';
 import { provideNzIcons } from './icons-provider';
+import { authInterceptor } from './core/auth/interceptors/auth.interceptor';
 
 // Registra os dados de localização para português do Brasil
 registerLocaleData(pt);

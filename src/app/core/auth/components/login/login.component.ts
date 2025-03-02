@@ -2,8 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
-import { AuthService } from '../../../core/services/auth.service';
-import { AuthStore } from '../../../core/store/auth.store';
+import { AuthStore } from '../../service/auth.store';
 
 // Importações do NG-ZORRO
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -15,6 +14,7 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { AuthService } from '../../service/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -115,8 +115,9 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
       min-height: 100vh;
       background-color: #f0f2f5;
       display: flex;
-    align-items: center;
-    justify-content: center;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
     }
     
     .h-100 {
@@ -124,7 +125,8 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
     }
     
     .login-card {
-      min-width: max-content;
+      width: 100%;
+      max-width: 400px;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
       padding: 24px;
@@ -195,6 +197,9 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
     .login-subtitle {
       margin-bottom: 24px;
     }
+    
+    /* Ajustes para telas pequenas */
+    @media (max-width: 480px) {
       .login-card {
         padding: 16px;
       }
@@ -203,11 +208,22 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
         font-size: 20px;
       }
       
-    
+      .app-name {
+        font-size: 20px;
+      }
+      
+      .logo-icon {
+        font-size: 36px;
+      }
+      
+      .login-subtitle {
+        margin-bottom: 24px;
+      }
+    }
   `]
 })
 export class LoginComponent {
-  private authService = inject(AuthService);
+  private authService = inject(AuthService);  
   private authStore = inject(AuthStore);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -244,12 +260,17 @@ export class LoginComponent {
     }
     
     const { email, password } = this.loginForm.value;
-    
+
     this.authService.login(email, password).subscribe({
-      next: () => {
-        // Redireciona para a URL de retorno ou para o dashboard
-        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/contador';
-        this.router.navigateByUrl(returnUrl);
+      next: (user) => {
+        // Verifica a role do usuário e redireciona para a página apropriada
+        if (user && user && user.role) {
+          const route = user.role === 'contador' ? '/contador' : '/cliente';
+          this.router.navigateByUrl(route);
+        } else {
+          // Caso a role não esteja definida, redireciona para uma página padrão
+          this.router.navigateByUrl('/perfil-incompleto');
+        }
       },
       error: () => {
         // O erro já é tratado pelo serviço e armazenado no store

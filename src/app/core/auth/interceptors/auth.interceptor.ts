@@ -1,7 +1,7 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthStore } from '../store/auth.store';
-import { environment } from '../../../environments/environment';
+import { AuthStore } from '../service/auth.store';
+import { environment } from '../../../../environments/environment';
 
 /**
  * Interceptor que adiciona o token de autenticação em todas as requisições HTTP

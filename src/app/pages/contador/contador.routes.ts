@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { ContadorLayoutComponent } from './contador-layout.component';
-import { authGuard, contadorGuard } from '../../core/guards/auth.guard';
+import { authGuard, contadorGuard } from '../../core/auth/guards/auth.guard';
 
 /**
  * Rotas para a área do contador
@@ -19,7 +19,7 @@ export const CONTADOR_ROUTES: Routes = [
       },
       {
         path: 'dashboard',
-        loadComponent: () => import('../../features/dashboard/dashboard.component').then(m => m.DashboardComponent)
+        loadComponent: () => import('../../features/components/dashboard/dashboard.component').then(m => m.DashboardComponent)
       }
       // Outras rotas específicas do contador serão adicionadas aqui
       // {

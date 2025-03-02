@@ -1,14 +1,14 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { AuthStore } from '../../core/store/auth.store';
+import { AuthStore } from '../../core/auth/service/auth.store';
 
 // Importações do NG-ZORRO
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
+import { ClienteSidebarComponent } from '../../shared/components/sidebars/cliente.sidebar.component';
+import { ClienteHeaderComponent } from '../../shared/components/headers/cliente.header.component';
 
 // Componentes compartilhados
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
-import { HeaderComponent } from '../../shared/components/header/header.component';
 
 /**
  * Componente de layout principal para o cliente
@@ -22,22 +22,22 @@ import { HeaderComponent } from '../../shared/components/header/header.component
     CommonModule,
     RouterOutlet,
     NzLayoutModule,
-    SidebarComponent,
-    HeaderComponent
+    ClienteSidebarComponent,
+    ClienteHeaderComponent
   ],
   template: `
     <nz-layout class="app-layout">
       <!-- Sidebar compartilhado -->
-      <app-sidebar [isCollapsed]="isCollapsed"></app-sidebar>
+      <app-cliente-sidebar [isCollapsed]="isCollapsed"></app-cliente-sidebar>
       
       <!-- Layout principal -->
       <nz-layout>
         <!-- Header compartilhado -->
-        <app-header 
+        <app-cliente-header 
           [isCollapsed]="isCollapsed" 
           [notificationCount]="notificationCount()" 
           (collapsedChange)="isCollapsed = $event">
-        </app-header>
+        </app-cliente-header>
         
         <!-- Conteúdo específico do cliente -->
         <router-outlet></router-outlet>

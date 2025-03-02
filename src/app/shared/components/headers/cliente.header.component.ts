@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { AuthStore } from '../../../core/store/auth.store';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthStore } from '../../../core/auth/service/auth.store';
+import { AuthService } from '../../../core/auth/service/auth.service';
 
 // Importações do NG-ZORRO
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
@@ -18,7 +18,7 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
  * @class HeaderComponent
  */
 @Component({
-  selector: 'app-header',
+  selector: 'app-cliente-header',
   standalone: true,
   imports: [
     CommonModule,
@@ -127,7 +127,7 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
     }
   `]
 })
-export class HeaderComponent {
+export class ClienteHeaderComponent {
   private authStore = inject(AuthStore);
   private authService = inject(AuthService);
   

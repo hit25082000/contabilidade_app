@@ -1,4 +1,3 @@
-// app.routes.ts
 import { Routes } from '@angular/router';
 import { authGuard, publicOnlyGuard } from './core/auth/guards/auth.guard';
 
@@ -47,12 +46,12 @@ export const routes: Routes = [
         path: 'cliente',
         loadChildren: () => import('./pages/cliente/cliente.routes').then(m => m.CLIENTE_ROUTES)
     },
-    // {
-    //     path: 'acesso-negado',
-    //     loadComponent: () => import('./features/errors/access-denied/access-denied.component').then(m => m.AccessDeniedComponent)
-    // },
-    // {
-    //     path: '**',
-    //     loadComponent: () => import('./features/errors/not-found/not-found.component').then(m => m.NotFoundComponent)
-    // }
-];
+    {
+        path: 'acesso-negado',
+        loadComponent: () => import('./core/auth/components/access-denied/access-denied.component').then(m => m.AccessDeniedComponent)
+    },
+    {
+        path: '**',
+        loadComponent: () => import('./core/auth/components/not-found/not-found.component').then(m => m.NotFoundComponent)
+    }
+]; 

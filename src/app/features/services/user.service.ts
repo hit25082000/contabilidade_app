@@ -4,12 +4,12 @@ import { createClient } from '@supabase/supabase-js';
 import { forkJoin, from, Observable, of } from 'rxjs';
 import { rxResource } from '@angular/core/rxjs-interop'
 import { HttpClient } from '@angular/common/http';
-import { User } from '../models/user';
 import { DatabaseService } from '../../core/services/database.service';
+import { IUser } from '../../core/auth/models/user.interface';
 
 export class UserService {
   database = inject(DatabaseService)
-  table = signal("User")
+  table = signal("profiles")
 
   private selectedUserId = signal<number | null>(null)
 
@@ -40,11 +40,11 @@ export class UserService {
     this.selectedUserId.set(id);
   }
 
-  private getUserById(id: number): Observable<User | null> {
+  private getUserById(id: number): Observable<IUser | null> {
     return from(this.database.getByID(this.table(),id));
   }
 
-  private getUsers():Observable<User[]> {
+  private getUsers():Observable<IUser[]> {
     return from(this.database.getAll(this.table()))
       }
     }

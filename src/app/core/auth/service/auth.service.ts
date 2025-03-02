@@ -1,10 +1,10 @@
 import { Injectable, inject, effect } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, from, map, tap, catchError, throwError } from 'rxjs';
+import { Observable, from, map, tap, catchError, throwError, switchMap } from 'rxjs';
 import { IUser, ISession } from '../models/user.interface';
-import { AuthStore } from '../store/auth.store';
+import { AuthStore } from './auth.store';
 import { AuthSupabaseService } from '../providers/auth.provider';
-
+import { DatabaseService } from '../../services/database.service';
 /**
  * Serviço de autenticação que integra o provedor de autenticação com o store
  * Utiliza signals e effects do Angular 19 para gerenciamento de estado
@@ -14,13 +14,14 @@ import { AuthSupabaseService } from '../providers/auth.provider';
     providedIn: 'root'
 })
 export class AuthService {
-    private authService = inject(AuthSupabaseService);
+    private authProvider = inject(AuthSupabaseService);
+    private database = inject(DatabaseService);
     private authStore = inject(AuthStore);
     private router = inject(Router);
 
     constructor() {
         // Configura o listener de mudanças no estado de autenticação
-        this.authService.onAuthStateChanged((session) => {
+        this.authProvider.onAuthStateChanged((session) => {
             if (session) {
                 this.handleSession(session);
             } else {
@@ -30,7 +31,7 @@ export class AuthService {
 
         // Efeito para monitorar erros do provedor de autenticação
         effect(() => {
-            const error = this.authService.error();
+            const error = this.authProvider.error();
             if (error) {
                 this.authStore.setError(error);
             }
@@ -38,7 +39,7 @@ export class AuthService {
 
         // Efeito para monitorar estado de loading do provedor de autenticação
         effect(() => {
-            const isLoading = this.authService.isLoading();
+            const isLoading = this.authProvider.isLoading();
             this.authStore.setLoading(isLoading);
         });
 
@@ -51,9 +52,9 @@ export class AuthService {
      */
     private async checkCurrentUser(): Promise<void> {
         try {
-            const user = await this.authService.getCurrentUser();
+            const user = await this.authProvider.getCurrentUser();
             if (user) {
-                const token = await this.authService.getAccessToken();
+                const token = await this.authProvider.getAccessToken();
                 // Simula uma sessão para o handleSession
                 const session = {
                     user,
@@ -74,21 +75,28 @@ export class AuthService {
      * @param email - Email do usuário
      * @param password - Senha do usuário
      */
-    login(email: string, password: string): Observable<ISession> {
-        return from(this.authService.signInWithEmailAndPassword(email, password))
-            .pipe(
-                map(data => {
-                    return this.handleSession(data.session);
-                }),
-                tap(() => {
-                    this.router.navigate(['/dashboard']);
-                }),
-                catchError(error => {
-                    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-                    this.authStore.setError(`Erro ao realizar login: ${errorMessage}`);
-                    return throwError(() => error);
-                })
-            );
+    login(email: string, password: string): Observable<IUser> {
+        this.authStore.setLoading(true);
+        this.authStore.setError(null);
+        
+        return from(this.authProvider.signInWithEmailAndPassword(email, password)).pipe(
+            switchMap(response => {
+                if (response.error) {
+                    throw new Error(response.error.message);
+                }
+                
+                return this.getUserProfile(response.user.id);
+            }),
+            tap(user => {
+                this.authStore.updateUser(user);
+                this.authStore.setLoading(false);
+            }),
+            catchError(error => {
+                this.authStore.setError(error.message);
+                this.authStore.setLoading(false);
+                return throwError(() => error);
+            })
+        );
     }
 
     /**
@@ -98,7 +106,7 @@ export class AuthService {
      * @param userData - Dados adicionais do usuário
      */
     register(email: string, password: string, userData: Partial<IUser>): Observable<ISession> {
-        return from(this.authService.signUp(email, password, userData)).pipe(
+        return from(this.authProvider.signUp(email, password, userData)).pipe(
             map(data => {
                 return this.handleSession(data.session);
             }),
@@ -117,7 +125,7 @@ export class AuthService {
      * Realiza o logout do usuário
      */
     logout(): Observable<void> {
-        return from(this.authService.signOut()).pipe(
+        return from(this.authProvider.signOut()).pipe(
             tap(() => {
                 this.authStore.clearSession();
                 this.router.navigate(['/auth/login']);
@@ -137,7 +145,7 @@ export class AuthService {
     resetPassword(email: string): Observable<void> {
         const redirectUrl = `${window.location.origin}/auth/nova-senha`;
         
-        return from(this.authService.resetPassword(email, redirectUrl)).pipe(
+        return from(this.authProvider.resetPassword(email, redirectUrl)).pipe(
             catchError(error => {
                 const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
                 this.authStore.setError(`Erro ao solicitar recuperação de senha: ${errorMessage}`);
@@ -151,7 +159,7 @@ export class AuthService {
      * @param newPassword - Nova senha
      */
     updatePassword(newPassword: string): Observable<void> {
-        return from(this.authService.updatePassword(newPassword)).pipe(
+        return from(this.authProvider.updatePassword(newPassword)).pipe(
             catchError(error => {
                 const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
                 this.authStore.setError(`Erro ao atualizar senha: ${errorMessage}`);
@@ -202,5 +210,18 @@ export class AuthService {
                 cargo: userData.cargo || ''
             }
         };
+    }
+
+    // Método para buscar o perfil completo do usuário
+    private getUserProfile(userId: string): Observable<IUser> {
+        return from(this.database.getUserProfile(userId)).pipe(
+        ).pipe(
+            map(response => {
+                if (response.error) {
+                    throw new Error(response.error.message);
+                }
+                return response.data as IUser;
+            })
+        );
     }
 } 

@@ -38,4 +38,12 @@ export class DatabaseService {
       return User || []
             })
   }
+
+  async getUserProfile(id: string) {
+    return supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', id)
+      .single()
+  }
 }
