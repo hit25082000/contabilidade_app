@@ -1,33 +1,69 @@
 // app.routes.server.ts
 import { RenderMode, ServerRoute } from '@angular/ssr';
+
+/**
+ * Configuração de rotas para renderização no servidor
+ * Define quais rotas serão renderizadas no servidor (SSR) e quais serão pré-renderizadas (SSG)
+ */
 export const serverRoutes: ServerRoute[] = [
   {
-    path: '', // This renders the "/" route on the client (CSR)
+    path: '', // Rota raiz
     renderMode: RenderMode.Server,
   },
   {
-    path: 'user-list', // This renders the "/" route on the client (CSR)
+    path: 'auth', // Área de autenticação
     renderMode: RenderMode.Server,
   },
-//   {
-//     path: 'user-list',
-//     renderMode: RenderMode.Server,
-
-//   },
-// {
-//     path: 'user-details',
-//     renderMode: RenderMode.Server,
-//   },
+  {
+    path: 'auth/login', // Página de login
+    renderMode: RenderMode.Server,
+  },
+  {
+    path: 'contador', // Layout principal do contador
+    renderMode: RenderMode.Server,
+  },
+  {
+    path: 'contador/dashboard', // Dashboard do contador
+    renderMode: RenderMode.Server,
+  },
   // {
-  //   path: 'about', // This page is static, so we prerender it (SSG)
-  //   renderMode: RenderMode.Prerender,
-  // },
-  // {
-  //   path: 'profile', // This page requires user-specific data, so we use SSR
+  //   path: 'contador/clientes', // Lista de clientes do contador
   //   renderMode: RenderMode.Server,
   // },
   // {
-  //   path: '**', // All other routes will be rendered on the server (SSR)
+  //   path: 'contador/documentos', // Documentos do contador
   //   renderMode: RenderMode.Server,
   // },
+  // {
+  //   path: 'contador/agenda', // Agenda do contador
+  //   renderMode: RenderMode.Server,
+  // },
+  // {
+  //   path: 'contador/relatorios', // Relatórios do contador
+  //   renderMode: RenderMode.Server,
+  // },
+  {
+    path: 'cliente', // Layout principal do cliente
+    renderMode: RenderMode.Server,
+  },
+  {
+    path: 'cliente/dashboard', // Dashboard do cliente
+    renderMode: RenderMode.Server,
+  },
+  // {
+  //   path: 'cliente/documentos', // Documentos do cliente
+  //   renderMode: RenderMode.Server,
+  // },
+  // {
+  //   path: 'cliente/plantao', // Registro de plantão do cliente
+  //   renderMode: RenderMode.Server,
+  // },
+  // {
+  //   path: 'cliente/agenda', // Agenda do cliente
+  //   renderMode: RenderMode.Server,
+  // },
+  {
+    path: '**', // Todas as outras rotas
+    renderMode: RenderMode.Server,
+  }
 ];

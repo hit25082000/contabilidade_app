@@ -248,7 +248,7 @@ export class LoginComponent {
     this.authService.login(email, password).subscribe({
       next: () => {
         // Redireciona para a URL de retorno ou para o dashboard
-        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/contador';
         this.router.navigateByUrl(returnUrl);
       },
       error: () => {
