@@ -226,7 +226,6 @@ export class LoginComponent {
   private authService = inject(AuthService);  
   private authStore = inject(AuthStore);
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
   
   loginForm: FormGroup;

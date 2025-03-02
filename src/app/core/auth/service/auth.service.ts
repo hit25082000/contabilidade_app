@@ -85,7 +85,9 @@ export class AuthService {
                     throw new Error(response.error.message);
                 }
                 
-                return this.getUserProfile(response.user.id);
+                console.log(response)
+
+                return this.getUserProfile(response.data.user.id);
             }),
             tap(user => {
                 this.authStore.updateUser(user);

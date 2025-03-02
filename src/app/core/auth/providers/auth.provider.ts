@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { createClient, SupabaseClient, User, Session } from '@supabase/supabase-js';
+import { createClient, SupabaseClient, User, Session, UserResponse } from '@supabase/supabase-js';
 import { environment } from '../../../../environments/environment';
 import { IAuthProvider } from '../models/auth-provider.interface';
 import { IUser } from '../models/user.interface';
@@ -107,24 +107,24 @@ export class AuthSupabaseService  {
      * @param password - Senha do usuário
      * @returns Promise com dados da sessão
      */
-    async signInWithEmailAndPassword(email: string, password: string): Promise<any> {
+    async signInWithEmailAndPassword(email: string, password: string): Promise<UserResponse> {
         try {
             this.isLoadingSignal.set(true);
             this.errorSignal.set(null);
             
-            const { data, error } = await this.supabase.auth.signInWithPassword({ 
+            const response = await this.supabase.auth.signInWithPassword({ 
                 email, 
                 password 
             });
             
-            console.log(data)
+            console.log(response)
 
-            if (error) {
-                this.errorSignal.set(`Erro ao fazer login: ${error.message}`);
-                throw error;
+            if (response.error) {
+                this.errorSignal.set(`Erro ao fazer login: ${response.error.message}`);
+                throw response.error;
             }
             
-            return data.user;
+            return response;
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
             this.errorSignal.set(`Erro ao fazer login: ${errorMessage}`);
