@@ -5,10 +5,14 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { AUTH_PROVIDER, authProviderFactory } from './core/providers/auth-provider.factory';
-import { SupabaseAuthProvider } from './core/providers/supabase-auth.provider';
-import { FirebaseAuthProvider } from './core/providers/firebase-auth.provider';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { pt_BR, provideNzI18n } from 'ng-zorro-antd/i18n';
+import { registerLocaleData } from '@angular/common';
+import pt from '@angular/common/locales/pt';
+import { provideNzIcons } from './icons-provider';
+
+// Registra os dados de localização para português do Brasil
+registerLocaleData(pt);
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -35,14 +39,8 @@ export const appConfig: ApplicationConfig = {
     // Configuração de Animações
     provideAnimations(),
     
-    // Provedores de Autenticação
-    {
-      provide: AUTH_PROVIDER,
-      useFactory: authProviderFactory
-    },
-    
-    // Registra os provedores concretos
-    { provide: SupabaseAuthProvider, useClass: SupabaseAuthProvider },
-    { provide: FirebaseAuthProvider, useClass: FirebaseAuthProvider }
+    // Configuração do NG-ZORRO
+    provideNzI18n(pt_BR),
+    provideNzIcons(), 
   ]
 };

@@ -1,1 +1,174 @@
 /* You can add global styles to this file, and also import other style files */
+@import "ng-zorro-antd/ng-zorro-antd.min.css";
+
+// Variáveis de tema personalizadas
+:root {
+    --primary-color: #1890ff;
+    --primary-color-hover: #40a9ff;
+    --primary-color-active: #096dd9;
+    --primary-color-outline: rgba(24, 144, 255, 0.2);
+    --primary-1: #e6f7ff;
+    --primary-2: #bae7ff;
+    --primary-3: #91d5ff;
+    --primary-4: #69c0ff;
+    --primary-5: #40a9ff;
+    --primary-6: #1890ff;
+    --primary-7: #096dd9;
+
+    --success-color: #52c41a;
+    --warning-color: #faad14;
+    --error-color: #f5222d;
+
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+        'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji';
+
+    --heading-color: rgba(0, 0, 0, 0.85);
+    --text-color: rgba(0, 0, 0, 0.65);
+    --text-color-secondary: rgba(0, 0, 0, 0.45);
+
+    --border-radius-base: 4px;
+    --border-color-base: #d9d9d9;
+    --box-shadow-base: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+// Estilos globais
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-family);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-color);
+    background-color: #f0f2f5;
+}
+
+// Sobrescrever estilos do NG-ZORRO
+.ant-btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+
+    &:hover,
+    &:focus {
+        background-color: var(--primary-color-hover);
+        border-color: var(--primary-color-hover);
+    }
+
+    &:active {
+        background-color: var(--primary-color-active);
+        border-color: var(--primary-color-active);
+    }
+}
+
+.ant-input:focus,
+.ant-input-focused {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-color-outline);
+}
+
+// Utilitários
+.text-center {
+    text-align: center;
+}
+
+.mb-1 {
+    margin-bottom: 4px;
+}
+
+.mb-2 {
+    margin-bottom: 8px;
+}
+
+.mb-3 {
+    margin-bottom: 16px;
+}
+
+.mb-4 {
+    margin-bottom: 24px;
+}
+
+.mb-5 {
+    margin-bottom: 32px;
+}
+
+.mt-1 {
+    margin-top: 4px;
+}
+
+.mt-2 {
+    margin-top: 8px;
+}
+
+.mt-3 {
+    margin-top: 16px;
+}
+
+.mt-4 {
+    margin-top: 24px;
+}
+
+.mt-5 {
+    margin-top: 32px;
+}
+
+.ml-1 {
+    margin-left: 4px;
+}
+
+.ml-2 {
+    margin-left: 8px;
+}
+
+.ml-3 {
+    margin-left: 16px;
+}
+
+.ml-4 {
+    margin-left: 24px;
+}
+
+.ml-5 {
+    margin-left: 32px;
+}
+
+.mr-1 {
+    margin-right: 4px;
+}
+
+.mr-2 {
+    margin-right: 8px;
+}
+
+.mr-3 {
+    margin-right: 16px;
+}
+
+.mr-4 {
+    margin-right: 24px;
+}
+
+.mr-5 {
+    margin-right: 32px;
+}
+
+.p-1 {
+    padding: 4px;
+}
+
+.p-2 {
+    padding: 8px;
+}
+
+.p-3 {
+    padding: 16px;
+}
+
+.p-4 {
+    padding: 24px;
+}
+
+.p-5 {
+    padding: 32px;
+}

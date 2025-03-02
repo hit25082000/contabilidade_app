@@ -1,8 +1,5 @@
 export const environment = {
-    productions: false,
-    // Configuração do provedor de autenticação
-    AUTH_PROVIDER: 'supabase', // Pode ser 'supabase' ou 'firebase'
-    
+    productions: true,    
     // Configurações do Supabase
     SUPABASE_URL: 'https://sclrtdaogtiudzgxqxql.supabase.co',
     SUPABASE_URL_HOM: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres',
@@ -20,6 +17,5 @@ export const environment = {
     // FIREBASE_STORAGE_BUCKET: 'seu-projeto.appspot.com',
     // FIREBASE_MESSAGING_SENDER_ID: '123456789',
     // FIREBASE_APP_ID: '1:123456789:web:abcdef123456789',
-    // FIREBASE_AUTH_URL: 'https://identitytoolkit.googleapis.com/v1'
-    
+    // FIREBASE_AUTH_URL: 'https://identitytoolkit.googleapis.com/v1'    
 };

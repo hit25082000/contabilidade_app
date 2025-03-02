@@ -5,6 +5,7 @@ import { UserListComponent } from './features/components/user-list/user-list.com
 import { UserDetailsComponent } from './features/components/user-details/user-details.component';
 import { SystemStatusComponent } from './core/components/system-status/system-status.component';
 import { authGuard, publicOnlyGuard, contadorGuard, clienteGuard } from './core/guards/auth.guard';
+import { LoginComponent } from './features/auth/login/login.component';
 
 export const routes: Routes = [
     {
@@ -14,7 +15,7 @@ export const routes: Routes = [
     },
     {
         path: 'user-list',
-        component: UserListComponent
+        component: LoginComponent
     },
     // {
     //     path: 'auth',
