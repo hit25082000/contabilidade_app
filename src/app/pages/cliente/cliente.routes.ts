@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { ClienteLayoutComponent } from './cliente-layout.component';
 import { authGuard, clienteGuard } from '../../core/auth/guards/auth.guard';
 import { DocumentosPage } from './documentos/documentos.page';
+import { PLANTAO_ROUTES } from '../../features/components/plantao/plantao.routes';
 
 /**
  * Rotas para a área do cliente
@@ -22,19 +23,15 @@ export const CLIENTE_ROUTES: Routes = [
         path: 'documentos',
         component: DocumentosPage
       },
-      // Outras rotas específicas do cliente serão adicionadas aqui
       {
         path: 'dashboard',
         loadComponent: () => import('../../features/components/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
-      // {
-      //   path: 'plantao',
-      //   loadComponent: () => import('./plantao/plantao.component').then(m => m.PlantaoComponent)
-      // },
-      // {
-      //   path: 'agenda',
-      //   loadComponent: () => import('./agenda/agenda.component').then(m => m.AgendaComponent)
-      // }
+      {
+        path: 'plantoes',
+        children: PLANTAO_ROUTES
+      },
+      // Outras rotas específicas do cliente serão adicionadas aqui
     ]
   }
 ]; 

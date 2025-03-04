@@ -25,6 +25,7 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     NzLayoutModule,
     NzBreadCrumbModule,
     NzCardModule,
@@ -162,7 +163,7 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
             </thead>
             <tbody>
               <tr *ngFor="let atividade of atividadesTable.data">
-                <td>{{ atividade.data }}</td>
+                <td>{{ formatarData(atividade.data) }}</td>
                 <td>{{ atividade.descricao }}</td>
                 <td>
                   <nz-tag [nzColor]="getStatusColor(atividade.status)">
@@ -191,16 +192,22 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
               <thead>
                 <tr>
                   <th>Nome</th>
-                  <th>CPF/CNPJ</th>
+                  <th>Empresa</th>
                   <th>Último Acesso</th>
+                  <th>Pendências</th>
                   <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let cliente of clientesTable.data">
                   <td>{{ cliente.nome }}</td>
-                  <td>{{ cliente.cpfCnpj }}</td>
-                  <td>{{ cliente.ultimoAcesso }}</td>
+                  <td>{{ cliente.empresa }}</td>
+                  <td>{{ formatarData(cliente.ultimoAcesso) }}</td>
+                  <td>
+                    <nz-tag [nzColor]="cliente.documentosPendentes > 0 ? 'red' : 'green'">
+                      {{ cliente.documentosPendentes }} docs
+                    </nz-tag>
+                  </td>
                   <td>
                     <a nz-button nzType="link" nzSize="small">Detalhes</a>
                   </td>
@@ -217,10 +224,11 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
         
         <!-- Seção específica para Cliente -->
         <ng-container *ngIf="isCliente()">
+          <!-- Card de Documentos Recentes -->
           <nz-card class="mb-4">
             <div class="card-header">
               <h2>Documentos Recentes</h2>
-              <button nz-button nzType="link">Ver todos</button>
+              <button nz-button nzType="link" routerLink="/cliente/documentos">Ver todos</button>
             </div>
             
             <nz-table #documentosTable [nzData]="documentosRecentes" [nzShowPagination]="false" nzSize="small">
@@ -237,7 +245,7 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
                 <tr *ngFor="let documento of documentosTable.data">
                   <td>{{ documento.nome }}</td>
                   <td>{{ documento.tipo }}</td>
-                  <td>{{ documento.data }}</td>
+                  <td>{{ formatarData(documento.data) }}</td>
                   <td>
                     <nz-tag [nzColor]="getStatusColor(documento.status)">
                       {{ documento.status }}
@@ -254,6 +262,91 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
               *ngIf="documentosRecentes.length === 0" 
               nzNotFoundContent="Nenhum documento recente encontrado">
             </nz-empty>
+          </nz-card>
+          
+          <!-- Card de Plantões Recentes -->
+          <nz-card class="mb-4">
+            <div class="card-header">
+              <h2>Plantões Recentes</h2>
+              <div class="card-actions">
+                <button nz-button nzType="primary" routerLink="/cliente/plantoes/registrar">
+                  <span nz-icon nzType="plus"></span>
+                  Registrar Plantão
+                </button>
+                <button nz-button nzType="default" routerLink="/cliente/plantoes">
+                  <span nz-icon nzType="unordered-list"></span>
+                  Ver Todos
+                </button>
+              </div>
+            </div>
+            
+            <div class="plantoes-cards">
+              <div nz-row [nzGutter]="16">
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" class="mb-3">
+                  <div class="plantao-card">
+                    <div class="plantao-header">
+                      <span class="plantao-data">28/05/2023</span>
+                      <nz-tag nzColor="blue">12h</nz-tag>
+                    </div>
+                    <div class="plantao-content">
+                      <h3>Hospital Santa Casa</h3>
+                      <p>Setor: Emergência</p>
+                      <p>Horário: 07:00 - 19:00</p>
+                    </div>
+                    <div class="plantao-footer">
+                      <button nz-button nzType="link" nzSize="small" routerLink="/cliente/plantoes/detalhes/1">
+                        <span nz-icon nzType="eye"></span> Detalhes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" class="mb-3">
+                  <div class="plantao-card">
+                    <div class="plantao-header">
+                      <span class="plantao-data">15/05/2023</span>
+                      <nz-tag nzColor="blue">6h</nz-tag>
+                    </div>
+                    <div class="plantao-content">
+                      <h3>Hospital São Lucas</h3>
+                      <p>Setor: UTI</p>
+                      <p>Horário: 19:00 - 01:00</p>
+                    </div>
+                    <div class="plantao-footer">
+                      <button nz-button nzType="link" nzSize="small" routerLink="/cliente/plantoes/detalhes/2">
+                        <span nz-icon nzType="eye"></span> Detalhes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="8" class="mb-3">
+                  <div class="plantao-card">
+                    <div class="plantao-header">
+                      <span class="plantao-data">10/05/2023</span>
+                      <nz-tag nzColor="blue">8h</nz-tag>
+                    </div>
+                    <div class="plantao-content">
+                      <h3>Hospital Regional</h3>
+                      <p>Setor: Pediatria</p>
+                      <p>Horário: 08:00 - 16:00</p>
+                    </div>
+                    <div class="plantao-footer">
+                      <button nz-button nzType="link" nzSize="small" routerLink="/cliente/plantoes/detalhes/3">
+                        <span nz-icon nzType="eye"></span> Detalhes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="view-calendar-button">
+                <button nz-button nzType="default" routerLink="/cliente/plantoes/calendario">
+                  <span nz-icon nzType="calendar"></span>
+                  Ver Calendário
+                </button>
+              </div>
+            </div>
           </nz-card>
         </ng-container>
       </div>
@@ -299,6 +392,10 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
       margin-bottom: 16px;
     }
     
+    .mb-3 {
+      margin-bottom: 16px;
+    }
+    
     .card-header {
       display: flex;
       justify-content: space-between;
@@ -312,6 +409,62 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
       font-weight: 500;
     }
     
+    .card-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .plantao-card {
+      border: 1px solid #f0f0f0;
+      border-radius: 4px;
+      padding: 16px;
+      height: 100%;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+      transition: all 0.3s;
+    }
+    
+    .plantao-card:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+    
+    .plantao-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .plantao-data {
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.65);
+    }
+    
+    .plantao-content {
+      margin-bottom: 12px;
+    }
+    
+    .plantao-content h3 {
+      margin-bottom: 8px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    .plantao-content p {
+      margin-bottom: 4px;
+      color: rgba(0, 0, 0, 0.65);
+    }
+    
+    .plantao-footer {
+      display: flex;
+      justify-content: flex-end;
+    }
+    
+    .view-calendar-button {
+      display: flex;
+      justify-content: center;
+      margin-top: 16px;
+    }
+    
     /* Responsividade para dispositivos móveis */
     @media (max-width: 768px) {
       nz-content {
@@ -320,6 +473,32 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
       
       .inner-content {
         padding: 16px;
+      }
+    }
+    
+    /* Responsividade para telas pequenas */
+    @media (max-width: 576px) {
+      .inner-content {
+        padding: 16px;
+      }
+      
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      
+      .card-actions {
+        width: 100%;
+        flex-direction: column;
+      }
+      
+      .card-actions button {
+        width: 100%;
+      }
+      
+      .page-header h1 {
+        font-size: 20px;
       }
     }
     
@@ -334,7 +513,7 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
       }
       
       .page-header h1 {
-        font-size: 20px;
+        font-size: 18px;
       }
     }
   `]
@@ -365,23 +544,24 @@ export class DashboardComponent implements OnInit {
   
   // Atividades recentes
   atividadesRecentes = [
-    { data: '10/06/2023', descricao: 'Documento fiscal enviado', status: 'Concluído' },
-    { data: '08/06/2023', descricao: 'Reunião com cliente', status: 'Agendado' },
-    { data: '05/06/2023', descricao: 'Declaração de imposto', status: 'Pendente' }
+    { tipo: 'documento', descricao: 'Nota Fiscal 12345 enviada', data: '2023-06-01', status: 'enviado' },
+    { tipo: 'reuniao', descricao: 'Reunião mensal agendada', data: '2023-06-15', status: 'agendado' },
+    { tipo: 'plantao', descricao: 'Plantão registrado: Hospital Santa Casa', data: '2023-05-28', status: 'concluido' },
+    { tipo: 'documento', descricao: 'Declaração de IR pendente', data: '2023-06-10', status: 'pendente' }
   ];
   
-  // Clientes recentes (para Contador)
+  // Clientes recentes (para contador)
   clientesRecentes = [
-    { nome: 'Empresa ABC Ltda', cpfCnpj: '12.345.678/0001-90', ultimoAcesso: '10/06/2023' },
-    { nome: 'João Silva ME', cpfCnpj: '98.765.432/0001-21', ultimoAcesso: '09/06/2023' },
-    { nome: 'Maria Oliveira', cpfCnpj: '123.456.789-00', ultimoAcesso: '08/06/2023' }
+    { nome: 'João Silva', empresa: 'Silva Ltda', ultimoAcesso: '2023-06-01', documentosPendentes: 2 },
+    { nome: 'Maria Oliveira', empresa: 'Oliveira ME', ultimoAcesso: '2023-05-28', documentosPendentes: 0 },
+    { nome: 'Carlos Santos', empresa: 'Santos S.A.', ultimoAcesso: '2023-05-25', documentosPendentes: 5 }
   ];
   
-  // Documentos recentes (para Cliente)
+  // Documentos recentes
   documentosRecentes = [
-    { nome: 'Nota Fiscal 12345', tipo: 'NF-e', data: '10/06/2023', status: 'Processado' },
-    { nome: 'Recibo de Pagamento', tipo: 'Recibo', data: '08/06/2023', status: 'Pendente' },
-    { nome: 'Extrato Bancário', tipo: 'Extrato', data: '05/06/2023', status: 'Enviado' }
+    { nome: 'Nota Fiscal 12345', tipo: 'NF-e', data: '2023-06-01', status: 'enviado' },
+    { nome: 'Declaração IR 2023', tipo: 'IRPF', data: '2023-05-20', status: 'pendente' },
+    { nome: 'Folha de Pagamento', tipo: 'RH', data: '2023-05-15', status: 'processado' }
   ];
   
   ngOnInit(): void {
@@ -390,23 +570,36 @@ export class DashboardComponent implements OnInit {
   }
   
   /**
-   * Retorna a cor do status para as tags
-   * @param status - Status da atividade ou documento
-   * @returns string com o código de cor
+   * Retorna a cor do status para exibição nas tags
+   * @param status - Status a ser verificado
+   * @returns Cor correspondente ao status
    */
   getStatusColor(status: string): string {
     switch (status.toLowerCase()) {
-      case 'concluído':
-      case 'processado':
-        return 'success';
-      case 'pendente':
-        return 'warning';
-      case 'agendado':
-        return 'processing';
       case 'enviado':
+      case 'concluido':
+      case 'processado':
+        return 'green';
+      case 'pendente':
+        return 'orange';
+      case 'agendado':
         return 'blue';
+      case 'atrasado':
+        return 'red';
       default:
         return 'default';
     }
+  }
+  
+  /**
+   * Formata a data para exibição
+   * @param dataString - Data em formato ISO
+   * @returns Data formatada
+   */
+  formatarData(dataString: string): string {
+    if (!dataString) return '';
+    
+    const data = new Date(dataString);
+    return data.toLocaleDateString('pt-BR');
   }
 } 

@@ -42,7 +42,7 @@ import { AccountBookFill, FilePdfOutline, AlertOutline } from '@ant-design/icons
         </a>
       </div>
       <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="isCollapsed">
-        <li nz-menu-item nzSelected routerLink="./" routerLinkActive="ant-menu-item-selected">
+        <li nz-menu-item nzSelected routerLink="/cliente/dashboard" routerLinkActive="ant-menu-item-selected">
           <span nz-icon nzType="dashboard"></span>
           <span>Dashboard</span>
         </li>
@@ -73,18 +73,27 @@ import { AccountBookFill, FilePdfOutline, AlertOutline } from '@ant-design/icons
         
         <!-- Menu para Cliente -->
         <ng-container *ngIf="isCliente()">
-            <li nz-menu-item routerLink="/cliente/documentos" routerLinkActive="ant-menu-item-selected">
+          <li nz-menu-item routerLink="/cliente/documentos" routerLinkActive="ant-menu-item-selected">
             <nz-icon nzType="file-pdf" nzTheme="outline" />
-              <span>Meus Documentos</span> 
-            </li>
-          
-          <li nz-menu-item routerLink="/cliente/plantao" routerLinkActive="ant-menu-item-selected">
-            <span nz-icon nzType="clock-circle"></span>
-            <span>Registrar Plantão</span>
+            <span>Meus Documentos</span> 
           </li>
-          <li nz-menu-item routerLink="/cliente/agenda" routerLinkActive="ant-menu-item-selected">
-            <span nz-icon nzType="calendar"></span>
-            <span>Agenda</span>
+          
+          <!-- Menu de Plantões -->
+          <li nz-submenu nzTitle="Plantões" nzIcon="clock-circle">
+            <ul>
+              <li nz-menu-item routerLink="/cliente/plantoes" routerLinkActive="ant-menu-item-selected">
+                <span nz-icon nzType="unordered-list"></span>
+                <span>Listar Plantões</span>
+              </li>
+              <li nz-menu-item routerLink="/cliente/plantoes/registrar" routerLinkActive="ant-menu-item-selected">
+                <span nz-icon nzType="plus"></span>
+                <span>Registrar Plantão</span>
+              </li>
+              <li nz-menu-item routerLink="/cliente/plantoes/calendario" routerLinkActive="ant-menu-item-selected">
+                <span nz-icon nzType="calendar"></span>
+                <span>Calendário</span>
+              </li>
+            </ul>
           </li>
         </ng-container>
         

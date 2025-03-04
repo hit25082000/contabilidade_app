@@ -14,10 +14,12 @@ export const supabase = createClient(
   providedIn: 'root'
 })
 export class DatabaseService {
+  // Expondo o cliente Supabase para uso direto
+  readonly supabase = supabase;
 
   constructor() { }
 
-  async getByID(table: string, id: number) {     
+  async getByID(table: string, id: number | string) {     
     return supabase
         .from(table)
         .select('*')
