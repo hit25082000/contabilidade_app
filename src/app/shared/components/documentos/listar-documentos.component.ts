@@ -20,6 +20,7 @@ import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { url } from 'inspector';
+import { AuthStore } from '../../../core/auth/service/auth.store';
 
 /**
  * Interface que representa um arquivo no Supabase Storage
@@ -266,6 +267,7 @@ export class ListarDocumentosComponent {
   private modal = inject(NzModalService);
   private sanitizer = inject(DomSanitizer);
   private storageService = inject(StorageService);
+  private authStore = inject(AuthStore)
 
   // Signals
   documentos = signal<Documento[]>([]);
@@ -288,16 +290,17 @@ export class ListarDocumentosComponent {
 
   async carregarDocumentos(): Promise<void> {
     try {
+      const userPath = `documentos_${this.authStore.user()?.id}`
+      
       this.isLoading.set(true);
       this.erro.set(null);
       
-      const files = await this.storageService.listFiles('documentos');
-      console.log('Documentos retornados:', files);
+      const files = await this.storageService.listFiles(userPath);
       
       // Transforma os objetos FileObject em objetos Documento para a UI
       const docs = files.map((file: FileObject) => {
         // Gera a URL pública para o arquivo
-        const url = this.storageService.getPublicUrl(`documentos/${file.name}`);
+        const url = this.storageService.getPublicUrl(`${userPath}/${file.name}`);
         
         return {
           nome: file.name,
@@ -306,7 +309,7 @@ export class ListarDocumentosComponent {
           tamanho: file.metadata?.size,
           id: file.id,
           mimetype: file.metadata?.mimetype,
-          path: `documentos/${file.name}`
+          path: `${userPath}/${file.name}`
         } as Documento;
       });
 
@@ -390,7 +393,7 @@ export class ListarDocumentosComponent {
       
       // Gera URL assinada com validade de 5 minutos (300 segundos)
       const urlAssinada = await this.storageService.createSignedUrl(documento.path, 300);
-      
+      console.log(documento.path)
       if (!urlAssinada) {
         console.error('Não foi possível gerar URL assinada para o documento');
         this.carregandoVisualizacao = false;

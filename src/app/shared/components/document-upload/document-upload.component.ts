@@ -9,6 +9,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { AuthStore } from '../../../core/auth/service/auth.store';
 
 /**
  * Componente para upload de documentos PDF
@@ -113,6 +114,7 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
 export class DocumentUploadComponent {
   private storageService = inject(StorageService);
   private message = inject(NzMessageService);
+  private authStore = inject(AuthStore);
 
   // Signals
   selectedFile = signal<File | null>(null);
@@ -158,7 +160,7 @@ export class DocumentUploadComponent {
       this.isLoading.set(true);
       // O path pode ser customizado baseado nas necessidades do negócio
       // Por exemplo: /clientes/{clienteId}/documentos/{ano}/{mes}
-      const path = 'documentos';
+      const path = 'documentos_' + this.authStore.user()?.id;
       const url = await this.storageService.uploadFile(file, path);
       
       this.message.success('Documento enviado com sucesso!');
