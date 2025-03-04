@@ -50,10 +50,10 @@ export const serverRoutes: ServerRoute[] = [
     path: 'cliente/dashboard', // Dashboard do cliente
     renderMode: RenderMode.Server,
   },
-  // {
-  //   path: 'cliente/documentos', // Documentos do cliente
-  //   renderMode: RenderMode.Server,
-  // },
+  {
+    path: 'cliente/documentos', // Documentos do cliente
+    renderMode: RenderMode.Server,
+  },
   // {
   //   path: 'cliente/plantao', // Registro de plantão do cliente
   //   renderMode: RenderMode.Server,

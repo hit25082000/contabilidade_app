@@ -7,6 +7,8 @@ import { AuthStore } from '../../../core/auth/service/auth.store';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { AccountBookFill, FilePdfOutline, AlertOutline } from '@ant-design/icons-angular/icons';
+
 
 /**
  * Componente de sidebar compartilhado
@@ -34,13 +36,13 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
       (nzCollapsedChange)="collapsedChange.emit($event)"
       [nzTrigger]="null">
       <div class="sidebar-logo">
-        <a href="javascript:void(0)">
+        <a routerLink="./">
           <span nz-icon nzType="audit" nzTheme="outline"></span>
           <h1 *ngIf="!isCollapsed">Contabilidade App</h1>
         </a>
       </div>
       <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="isCollapsed">
-        <li nz-menu-item nzSelected routerLink="/dashboard" routerLinkActive="ant-menu-item-selected">
+        <li nz-menu-item nzSelected routerLink="./" routerLinkActive="ant-menu-item-selected">
           <span nz-icon nzType="dashboard"></span>
           <span>Dashboard</span>
         </li>
@@ -71,12 +73,11 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
         
         <!-- Menu para Cliente -->
         <ng-container *ngIf="isCliente()">
-          <li nz-submenu nzTitle="Documentos" nzIcon="file-text">
-            <ul>
-              <li nz-menu-item routerLink="/cliente/documentos" routerLinkActive="ant-menu-item-selected">Meus Documentos</li>
-              <li nz-menu-item routerLink="/cliente/documentos/enviar" routerLinkActive="ant-menu-item-selected">Enviar Documentos</li>
-            </ul>
-          </li>
+            <li nz-menu-item routerLink="/cliente/documentos" routerLinkActive="ant-menu-item-selected">
+            <nz-icon nzType="file-pdf" nzTheme="outline" />
+              <span>Meus Documentos</span> 
+            </li>
+          
           <li nz-menu-item routerLink="/cliente/plantao" routerLinkActive="ant-menu-item-selected">
             <span nz-icon nzType="clock-circle"></span>
             <span>Registrar Plantão</span>
@@ -154,19 +155,6 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
       height: calc(100vh - 64px);
       overflow-y: auto;
       overflow-x: hidden;
-    }
-
-    @media (max-width: 768px) {
-      .menu-sidebar {
-        position: absolute;
-        transform: translateX(-100%);
-        transition: transform 0.2s;
-      }
-
-      :host-context(.sidebar-collapsed) .menu-sidebar {
-        transform: translateX(0);
-        width: 0;
-      }
     }
   `]
 })

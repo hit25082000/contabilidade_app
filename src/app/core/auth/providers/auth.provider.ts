@@ -43,7 +43,7 @@ export class AuthSupabaseService  {
                 {
                     auth: {
                         autoRefreshToken: false,
-                        persistSession: false
+                        persistSession: true
                     }
                 }
             );

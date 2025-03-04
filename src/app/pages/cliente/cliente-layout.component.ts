@@ -67,17 +67,7 @@ import { ClienteHeaderComponent } from '../../shared/components/headers/cliente.
       padding: 24px;
       min-height: calc(100vh - 64px);
       background: #fff;
-    }
-
-    @media (max-width: 768px) {
-      .main-layout {
-        margin-left: 0;
-      }
-      
-      .sidebar-collapsed .main-layout {
-        margin-left: 0;
-      }
-    }
+    }    
   `]
 })
 export class ClienteLayoutComponent {

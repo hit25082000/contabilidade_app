@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { ClienteLayoutComponent } from './cliente-layout.component';
 import { authGuard, clienteGuard } from '../../core/auth/guards/auth.guard';
+import { DocumentosPage } from './documentos/documentos.page';
 
 /**
  * Rotas para a área do cliente
@@ -18,14 +19,14 @@ export const CLIENTE_ROUTES: Routes = [
         pathMatch: 'full'
       },
       {
+        path: 'documentos',
+        component: DocumentosPage
+      },
+      // Outras rotas específicas do cliente serão adicionadas aqui
+      {
         path: 'dashboard',
         loadComponent: () => import('../../features/components/dashboard/dashboard.component').then(m => m.DashboardComponent)
-      }
-      // Outras rotas específicas do cliente serão adicionadas aqui
-      // {
-      //   path: 'documentos',
-      //   loadChildren: () => import('./documentos/documentos.routes').then(m => m.DOCUMENTOS_ROUTES)
-      // },
+      },
       // {
       //   path: 'plantao',
       //   loadComponent: () => import('./plantao/plantao.component').then(m => m.PlantaoComponent)
