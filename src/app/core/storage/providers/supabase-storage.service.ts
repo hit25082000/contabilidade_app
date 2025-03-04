@@ -101,6 +101,44 @@ export class SupabaseStorageService implements IStorageService {
     }
   }
 
+  /**
+   * Obtém a URL pública de um arquivo
+   * @param path Caminho do arquivo
+   * @param download Se true, adiciona parâmetro para download
+   * @returns URL pública do arquivo
+   */
+  getPublicUrl(path: string, download: boolean = false): string {
+    const { data } = supabase.storage.from(this.BUCKET_NAME).getPublicUrl(path, {
+      download: download
+    });
+    return data.publicUrl;
+  }
+
+  /**
+   * Cria uma URL assinada para acesso temporário a um arquivo privado
+   * @param path Caminho do arquivo
+   * @param expiracaoEmSegundos Tempo de validade da URL em segundos
+   * @returns Promise com a URL assinada ou null em caso de erro
+   */
+  async createSignedUrl(path: string, expiracaoEmSegundos: number = 60): Promise<string | null> {
+    try {
+      const { data, error } = await supabase
+        .storage
+        .from(this.BUCKET_NAME)
+        .createSignedUrl(path, expiracaoEmSegundos);
+
+      if (error) {
+        console.error('Erro ao gerar URL assinada:', error);
+        return null;
+      }
+
+      return data.signedUrl;
+    } catch (error) {
+      console.error('Erro ao gerar URL assinada:', error);
+      return null;
+    }
+  }
+
   async deleteFile(path: string): Promise<void> {
     try {
       const { error } = await supabase.storage

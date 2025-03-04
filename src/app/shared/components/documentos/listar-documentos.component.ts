@@ -1,20 +1,24 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StorageService } from '../../../core/storage/services/storage.service';
 import { environment } from '../../../../environments/environment';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { NzModalService } from 'ng-zorro-antd/modal';
 
 // Importações do NG-ZORRO
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzMessageModule, NzMessageService } from 'ng-zorro-antd/message';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { url } from 'inspector';
 
 /**
@@ -48,6 +52,7 @@ interface Documento {
   tamanho?: number;
   id?: string;
   mimetype?: string;
+  path?: string;
 }
 
 /**
@@ -68,7 +73,9 @@ interface Documento {
     NzEmptyModule,
     NzInputModule,
     NzToolTipModule,
-    NzAlertModule
+    NzAlertModule,
+    NzModalModule,
+    NzSpinModule
   ],
   template: `
     <nz-card>
@@ -125,22 +132,20 @@ interface Documento {
             <td>{{ documento.dataUpload | date:'dd/MM/yyyy HH:mm' }}</td>
             <td>{{ formatarTamanho(documento.tamanho) }}</td>
             <td>
-              <a 
-                [href]="documento.url" 
-                target="_blank" 
+              <button 
+                (click)="visualizarDocumento(documento)" 
                 nz-button 
                 nzType="link"
                 nz-tooltip="Visualizar PDF">
                 <span nz-icon nzType="eye"></span>
-              </a>
-              <a 
-                [href]="documento.url" 
-                download 
+              </button>
+              <button 
+                (click)="baixarDocumento(documento)" 
                 nz-button 
                 nzType="link"
                 nz-tooltip="Baixar PDF">
                 <span nz-icon nzType="download"></span>
-              </a>
+              </button>
               <button 
                 nz-button 
                 nzType="link" 
@@ -165,6 +170,23 @@ interface Documento {
         {{ termoBusca ? 'Nenhum documento encontrado para a busca' : 'Nenhum documento encontrado' }}
       </ng-template>
     </nz-card>
+
+    <!-- Template do modal para visualização de PDF -->
+    <ng-template #pdfViewerModal>
+      <div class="pdf-container">
+        <div *ngIf="carregandoVisualizacao" class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>Carregando documento...</p>
+        </div>
+        <iframe 
+          *ngIf="!carregandoVisualizacao && urlSegura" 
+          [src]="urlSegura" 
+          width="100%" 
+          height="500px" 
+          frameborder="0">
+        </iframe>
+      </div>
+    </ng-template>
   `,
   styles: [`
     .section-title {
@@ -207,11 +229,43 @@ interface Documento {
         padding: 4px 8px;
       }
     }
+
+    .pdf-container {
+      width: 100%;
+      min-height: 500px;
+      position: relative;
+    }
+    
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 500px;
+    }
+    
+    .loading-spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid #1890ff;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   `]
 })
 export class ListarDocumentosComponent {
-  private storageService = inject(StorageService);
   private message = inject(NzMessageService);
+  private modal = inject(NzModalService);
+  private sanitizer = inject(DomSanitizer);
+  private storageService = inject(StorageService);
 
   // Signals
   documentos = signal<Documento[]>([]);
@@ -221,6 +275,11 @@ export class ListarDocumentosComponent {
 
   // Estado local
   termoBusca = '';
+  pdfUrlSafe: SafeResourceUrl | null = null;
+  @ViewChild('pdfViewerModal') pdfViewerModal!: TemplateRef<any>;
+  documentoAtual: Documento | null = null;
+  urlSegura: SafeResourceUrl | null = null;
+  carregandoVisualizacao = false;
 
   constructor() {
     this.carregarDocumentos();
@@ -238,7 +297,7 @@ export class ListarDocumentosComponent {
       // Transforma os objetos FileObject em objetos Documento para a UI
       const docs = files.map((file: FileObject) => {
         // Gera a URL pública para o arquivo
-        const url = `${environment.SUPABASE_URL}/storage/v1/object/public/documentos/${file.name}`;
+        const url = this.storageService.getPublicUrl(`documentos/${file.name}`);
         
         return {
           nome: file.name,
@@ -246,7 +305,8 @@ export class ListarDocumentosComponent {
           dataUpload: new Date(file.created_at),
           tamanho: file.metadata?.size,
           id: file.id,
-          mimetype: file.metadata?.mimetype
+          mimetype: file.metadata?.mimetype,
+          path: `documentos/${file.name}`
         } as Documento;
       });
 
@@ -311,6 +371,72 @@ export class ListarDocumentosComponent {
       return `${(tamanho / 1024).toFixed(2)} KB`;
     } else {
       return `${(tamanho / (1024 * 1024)).toFixed(2)} MB`;
+    }
+  }
+
+  /**
+   * Visualiza um documento usando URL assinada para acesso temporário
+   * @param documento Documento a ser visualizado
+   */
+  async visualizarDocumento(documento: Documento): Promise<void> {
+    if (!documento.path) {
+      console.error('Caminho do documento não disponível');
+      return;
+    }
+    
+    try {
+      this.carregandoVisualizacao = true;
+      this.documentoAtual = documento;
+      
+      // Gera URL assinada com validade de 5 minutos (300 segundos)
+      const urlAssinada = await this.storageService.createSignedUrl(documento.path, 300);
+      
+      if (!urlAssinada) {
+        console.error('Não foi possível gerar URL assinada para o documento');
+        this.carregandoVisualizacao = false;
+        return;
+      }
+      
+      // Sanitiza a URL para uso seguro no iframe
+      this.urlSegura = this.sanitizer.bypassSecurityTrustResourceUrl(urlAssinada);
+      this.carregandoVisualizacao = false;
+      
+      // Abre o modal com o visualizador de PDF
+      this.modal.create({
+        nzTitle: documento.nome,
+        nzContent: this.pdfViewerModal,
+        nzWidth: '80%',
+        nzFooter: null,
+        nzCentered: true
+      });
+    } catch (error) {
+      console.error('Erro ao visualizar documento:', error);
+      this.carregandoVisualizacao = false;
+    }
+  }
+
+  /**
+   * Baixa um documento usando URL assinada
+   * @param documento Documento a ser baixado
+   */
+  async baixarDocumento(documento: Documento): Promise<void> {
+    if (!documento.path) {
+      console.error('Caminho do documento não disponível');
+      return;
+    }
+    
+    try {
+      // Gera URL assinada com validade de 60 segundos
+      const urlAssinada = await this.storageService.createSignedUrl(documento.path, 60);
+      
+      if (!urlAssinada) {
+        console.error('Não foi possível gerar URL assinada para download');
+        return;
+      }
+      
+      window.open(urlAssinada, '_blank');
+    } catch (error) {
+      console.error('Erro ao baixar documento:', error);
     }
   }
 } 

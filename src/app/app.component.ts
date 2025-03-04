@@ -45,7 +45,7 @@ export class AppComponent {
 
     const hasUpdate = await this.updateService.checkForUpdate();
     if (hasUpdate) {
-      console.log('Atualização encontrada durante a inicialização');
+      ('Atualização encontrada durante a inicialização');
     }
     this.cacheInspector.checkAssetsCache();
   }

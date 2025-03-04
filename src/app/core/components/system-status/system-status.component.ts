@@ -170,9 +170,9 @@ export class SystemStatusComponent implements OnInit {
     try {
       const hasUpdate = await this.updateService.checkForUpdate();
       if (hasUpdate) {
-        console.log('Nova versão disponível');
+        ('Nova versão disponível');
       } else {
-        console.log('Sistema atualizado');
+        ('Sistema atualizado');
       }
     } finally {
       this.#loading.set(false);
@@ -271,7 +271,7 @@ export class SystemStatusComponent implements OnInit {
 
       const result = await response.json();
       this.#pushNotificationStatus.set('Notificação enviada com sucesso!');
-      console.log('[SystemStatus] Resposta do servidor:', result);
+      ('[SystemStatus] Resposta do servidor:', result);
     } catch (error) {
       console.error('[SystemStatus] Erro ao enviar notificação:', error);
       this.#pushNotificationStatus.set(`Erro: ${error}`);

@@ -43,7 +43,7 @@ export class AuthSupabaseService  {
                 {
                     auth: {
                         autoRefreshToken: false,
-                        persistSession: true
+                        persistSession: false
                     }
                 }
             );
@@ -117,7 +117,7 @@ export class AuthSupabaseService  {
                 password 
             });
             
-            console.log(response)
+            (response)
 
             if (response.error) {
                 this.errorSignal.set(`Erro ao fazer login: ${response.error.message}`);

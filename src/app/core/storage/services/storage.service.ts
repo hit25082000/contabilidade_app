@@ -25,4 +25,18 @@ export class StorageService implements IStorageService {
   listFiles(path: string): Promise<any[]> {
     return this.storageProvider.listFiles(path);
   }
+
+  getPublicUrl(path: string, download?: boolean): string {
+    return this.storageProvider.getPublicUrl(path, download);
+  }
+
+  /**
+   * Cria uma URL assinada para acesso temporário a um arquivo privado
+   * @param path Caminho do arquivo
+   * @param expiracaoEmSegundos Tempo de validade da URL em segundos
+   * @returns Promise com a URL assinada ou null em caso de erro
+   */
+  createSignedUrl(path: string, expiracaoEmSegundos?: number): Promise<string | null> {
+    return this.storageProvider.createSignedUrl(path, expiracaoEmSegundos);
+  }
 } 

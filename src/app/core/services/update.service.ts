@@ -19,7 +19,7 @@ export class UpdateService {
 
     this.swUpdate.versionUpdates
       .pipe(
-        tap(event => console.log(`Evento de atualização: ${event.type}`)),
+        tap(event => (`Evento de atualização: ${event.type}`)),
         filter(event => event.type === 'VERSION_READY')
       )
       .subscribe(() => this.promptUserToUpdate());

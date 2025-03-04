@@ -28,7 +28,7 @@ webpush.setVapidDetails(
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    console.log('[Edge Function] Requisição OPTIONS recebida (preflight)');
+    ('[Edge Function] Requisição OPTIONS recebida (preflight)');
     return new Response(null, { 
       status: 204, 
       headers: corsHeaders 

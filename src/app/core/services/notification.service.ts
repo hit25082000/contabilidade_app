@@ -25,50 +25,37 @@ export class NotificationService {
     });
   }
 
-  constructor() {
-    console.log('[NotificationService] Inicializando serviço...');
-    console.log('[NotificationService] Service Worker habilitado:', this.swPush.isEnabled);
-    console.log('[NotificationService] VAPID_PUBLIC_KEY:', this.VAPID_PUBLIC_KEY);
-    console.log('[NotificationService] Base URL:', this.baseUrl);
-    
+  constructor() {    
     this.subscribeToNotifications();
     this.setupNotificationListener();
   }
 
   async getSubscription(): Promise<PushSubscription | null> {
-    console.log('[NotificationService] Tentando obter subscrição...');
     
     if (!this.swPush.isEnabled) {
-      console.warn('[NotificationService] Push notifications não estão habilitadas');
       return null;
     }
 
     try {
       // Tenta obter a subscrição existente
       let subscription = await this.swPush.subscription.toPromise();
-      console.log('[NotificationService] Subscrição existente:', subscription);
 
       // Se não existe subscrição, tenta criar uma nova
       if (!subscription) {
-        console.log('[NotificationService] Subscrição não encontrada, criando nova...');
         subscription = await this.swPush.requestSubscription({
           serverPublicKey: this.VAPID_PUBLIC_KEY
         });
-        console.log('[NotificationService] Nova subscrição criada:', subscription);
       }
 
       return subscription;
     } catch (error) {
-      console.error('[NotificationService] Erro ao obter/criar subscrição:', error);
       return null;
     }
   }
 
   subscribeToNotifications() {
-    console.log('[NotificationService] Iniciando processo de subscrição...');
     
     if (!this.swPush.isEnabled) {
-      console.warn('[NotificationService] Notificações push não estão habilitadas');
       return;
     }
 
@@ -76,7 +63,6 @@ export class NotificationService {
       serverPublicKey: this.VAPID_PUBLIC_KEY
     })
     .then(subscription => {
-      console.log('[NotificationService] Inscrição bem-sucedida:', subscription);
       this.sendSubscriptionToServer(subscription)
         .subscribe({
           next: (response) => console.log('[NotificationService] Inscrição registrada no servidor:', response),
@@ -87,48 +73,38 @@ export class NotificationService {
   }
 
   requestPermission(): Promise<NotificationPermission> {
-    console.log('[NotificationService] Solicitando permissão de notificação...');
     
     if (!this.notificationSupported) {
-      console.error('[NotificationService] Notificações não são suportadas');
       return Promise.reject('Notifications not supported');
     }
     return window.Notification.requestPermission()
       .then(permission => {
-        console.log('[NotificationService] Permissão de notificação:', permission);
         return permission;
       });
   }
 
   showNotification(title: string, options?: NotificationOptions): void {
-    console.log('[NotificationService] Tentando mostrar notificação:', { title, options });
     
     if (!this.notificationSupported) {
-      console.warn('[NotificationService] Notificações não são suportadas');
       return;
     }
 
     if (window.Notification.permission === 'granted') {
       new window.Notification(title, options);
-      console.log('[NotificationService] Notificação exibida com sucesso');
     } else {
-      console.warn('[NotificationService] Permissão de notificação não concedida');
     }
   }
 
   isNotificationSupported(): boolean {
     const supported = this.notificationSupported;
-    console.log('[NotificationService] Suporte a notificações:', supported);
     return supported;
   }
 
   getCurrentPermission(): NotificationPermission | null {
     if (!this.notificationSupported) {
-      console.warn('[NotificationService] Notificações não são suportadas');
       return null;
     }
     const permission = window.Notification.permission;
-    console.log('[NotificationService] Permissão atual:', permission);
     return permission;
   }
 
@@ -136,15 +112,7 @@ export class NotificationService {
     return isPlatformBrowser(this.platformId) && 'Notification' in window;
   }
 
-  private sendSubscriptionToServer(subscription: PushSubscription): Observable<NotificationMessage> {
-    console.log('[NotificationService] Enviando subscrição para o servidor:', {
-      url: this.baseUrl,
-      subscription,
-      headers: this.headers.keys().reduce((acc, key) => ({
-        ...acc,
-        [key]: this.headers.get(key)
-      }), {})
-    });
+  private sendSubscriptionToServer(subscription: PushSubscription): Observable<NotificationMessage> {    
 
     return this.http.post<NotificationMessage>(
       this.baseUrl,
@@ -156,12 +124,7 @@ export class NotificationService {
       }
     ).pipe(
       tap(response => {
-        console.log('[NotificationService] Headers da resposta:', {
-          keys: response.headers.keys(),
-          values: response.headers.keys().map(key => `${key}: ${response.headers.get(key)}`)
-        });
-        console.log('[NotificationService] Status da resposta:', response.status);
-        console.log('[NotificationService] Corpo da resposta:', response.body);
+     
       }),
       map(response => response.body as NotificationMessage),
       retry({
@@ -172,33 +135,16 @@ export class NotificationService {
         }
       }),
       catchError(error => {
-        console.error('[NotificationService] Erro ao enviar subscrição:', {
-          error,
-          status: error.status,
-          message: error.message,
-          response: error.error,
-          headers: error.headers?.keys().reduce((acc : any, key: any) => ({
-            ...acc,
-            [key]: error.headers?.get(key)
-          }), {})
-        });
+      
         return throwError(() => error);
       })
     );
   }
 
-  setupNotificationListener() {
-    console.log('[NotificationService] Configurando listener de notificações...');
-    
+  setupNotificationListener() {    
     this.swPush.notificationClicks.subscribe(({ action, notification }) => {
-      console.log('[NotificationService] Notificação clicada:', {
-        action,
-        notification,
-        data: notification.data
-      });
       
       if (notification.data?.url) {
-        console.log('[NotificationService] Redirecionando para:', notification.data.url);
         window.location.href = notification.data.url;
       }
     });

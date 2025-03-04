@@ -23,4 +23,20 @@ export interface IStorageService {
    * @returns Lista de objetos FileObject
    */
   listFiles(path: string): Promise<any[]>;
+
+  /**
+   * Obtém a URL pública de um arquivo
+   * @param path Caminho do arquivo
+   * @param download Se true, adiciona parâmetro para download
+   * @returns URL pública do arquivo
+   */
+  getPublicUrl(path: string, download?: boolean): string;
+
+  /**
+   * Cria uma URL assinada para acesso temporário a um arquivo privado
+   * @param path Caminho do arquivo
+   * @param expiracaoEmSegundos Tempo de validade da URL em segundos (padrão: 60)
+   * @returns Promise com a URL assinada ou null em caso de erro
+   */
+  createSignedUrl(path: string, expiracaoEmSegundos?: number): Promise<string | null>;
 } 

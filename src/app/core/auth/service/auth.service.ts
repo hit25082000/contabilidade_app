@@ -85,7 +85,7 @@ export class AuthService {
                     throw new Error(response.error.message);
                 }
                 
-                console.log(response)
+                (response)
 
                 return this.getUserProfile(response.data.user.id);
             }),
@@ -196,7 +196,7 @@ export class AuthService {
         // Adapta o formato do usuário do provedor para o formato da aplicação
         // Isso permite que diferentes provedores retornem formatos diferentes
         const userData = providerUser.user_metadata || providerUser.metadata || {};
-        
+        console.log(providerUser.user_metadata)
         return {
             id: providerUser.id || providerUser.uid,
             email: providerUser.email,
