@@ -36,11 +36,14 @@
             ],
             "scripts": [],
             "server": "src/main.server.ts",
-            "prerender": true,
             "allowedCommonJsDependencies": [
               "@supabase/node-fetch",
               "@supabase/supabase-js"
-            ]
+            ],
+            "outputMode": "server",
+            "ssr": {
+              "entry": "src/server.ts"
+            }
           },
           "configurations": {
             "production": {
