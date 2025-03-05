@@ -95,7 +95,6 @@ import { IPlantao } from '../../../models/plantao.model';
             
             <ng-container *nzDateCell="let date">
               <div class="ant-calendar-date">
-                {{ date.getDate() }}
                 <div class="plantoes-do-dia">
                   <ng-container *ngFor="let plantao of getPlantoesDoDia(date)">
                     <nz-badge 
@@ -148,11 +147,14 @@ import { IPlantao } from '../../../models/plantao.model';
       padding: 16px;
       max-width: 1200px;
       margin: 0 auto;
+      max-height: 100vh;
+      overflow-y: auto;
     }
     
     .calendario-card {
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+      overflow: hidden;
     }
     
     .page-header {
@@ -237,10 +239,42 @@ import { IPlantao } from '../../../models/plantao.model';
       margin: 2px;
     }
     
+    /* Ajustes para o calendário */
+    :host ::ng-deep .ant-picker-panel {
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch; /* Para melhor scroll em iOS */
+    }
+
+    :host ::ng-deep .ant-picker-panel-container {
+      max-height: inherit;
+      overflow: hidden;
+    }
+
+    :host ::ng-deep .ant-fullcalendar-calendar-body {
+      height: auto;
+      overflow-y: auto;
+    }
+
+    /* Estilização da barra de rolagem */
+    :host ::ng-deep .ant-picker-panel::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    :host ::ng-deep .ant-picker-panel::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+    }
+
+    :host ::ng-deep .ant-picker-panel::-webkit-scrollbar-track {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
     /* Responsividade para telas pequenas */
     @media (max-width: 768px) {
       .container {
         padding: 12px;
+        max-height: calc(100vh - 32px);
       }
 
       .actions-section {
@@ -275,12 +309,17 @@ import { IPlantao } from '../../../models/plantao.model';
         padding: 2px;
         min-height: 50px;
       }
+
+      :host ::ng-deep .ant-picker-panel {
+        max-height: calc(100vh - 150px);
+      }
     }
 
     /* Responsividade para telas muito pequenas */
     @media (max-width: 400px) {
       .container {
         padding: 8px;
+        max-height: calc(100vh - 16px);
       }
 
       .calendario-card {
@@ -358,6 +397,10 @@ import { IPlantao } from '../../../models/plantao.model';
         font-size: 12px;
         height: 28px;
         line-height: 26px;
+      }
+
+      :host ::ng-deep .ant-picker-panel {
+        max-height: calc(100vh - 100px);
       }
     }
   `]
