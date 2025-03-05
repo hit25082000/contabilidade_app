@@ -1,0 +1,23 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "buildCommand": "npm run build:vercel",
+                "outputDirectory": "dist/contabilidade-app"
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(assets|favicon.ico|manifest.webmanifest|ngsw.json|ngsw-worker.js)/(.*)",
+            "dest": "/assets/$2"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/index.html"
+        }
+    ]
+}
