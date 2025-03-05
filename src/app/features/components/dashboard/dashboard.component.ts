@@ -515,6 +515,42 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
       .page-header h1 {
         font-size: 18px;
       }
+
+      /* Ajustes para tabelas em telas pequenas */
+      :host ::ng-deep .ant-table {
+        overflow-x: auto;
+      }
+
+      :host ::ng-deep .ant-table-thead > tr > th,
+      :host ::ng-deep .ant-table-tbody > tr > td {
+        white-space: nowrap;
+        padding: 8px 4px;
+        font-size: 12px;
+      }
+
+      /* Esconde colunas menos importantes em telas pequenas */
+      :host ::ng-deep .ant-table-thead > tr > th:nth-child(2),
+      :host ::ng-deep .ant-table-tbody > tr > td:nth-child(2) {
+        display: none;
+      }
+
+      /* Ajusta botões de ação */
+      :host ::ng-deep .ant-btn {
+        padding: 0 4px;
+        font-size: 12px;
+      }
+
+      /* Ajusta tamanho dos ícones */
+      :host ::ng-deep .anticon {
+        font-size: 14px;
+      }
+
+      /* Ajusta tags de status */
+      :host ::ng-deep .ant-tag {
+        margin: 0;
+        padding: 0 4px;
+        font-size: 10px;
+      }
     }
   `]
 })

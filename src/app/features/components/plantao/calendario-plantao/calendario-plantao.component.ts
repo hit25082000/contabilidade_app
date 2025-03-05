@@ -213,66 +213,151 @@ import { IPlantao } from '../../../models/plantao.model';
       justify-content: flex-end;
     }
     
+    /* Ajustes específicos para o calendário */
+    :host ::ng-deep .ant-fullcalendar {
+      border: 1px solid #f0f0f0;
+      border-radius: 4px;
+      background: #fff;
+    }
+
+    :host ::ng-deep .ant-fullcalendar-header {
+      padding: 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    :host ::ng-deep .ant-fullcalendar-date {
+      margin: 4px;
+      padding: 4px;
+      height: auto;
+      min-height: 60px;
+    }
+
+    :host ::ng-deep .ant-badge {
+      display: inline-block;
+      margin: 2px;
+    }
+    
     /* Responsividade para telas pequenas */
-    @media (max-width: 576px) {
+    @media (max-width: 768px) {
       .container {
         padding: 12px;
       }
-      
-      .calendario-card {
-        border-radius: 4px;
-      }
-      
-      .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
-      
+
       .actions-section {
-        width: 100%;
-        flex-wrap: wrap;
+        flex-direction: column;
+        gap: 8px;
       }
-      
+
       .actions-section button {
-        flex: 1;
-        min-width: 120px;
+        width: 100%;
       }
-      
+
       .modo-visualizacao {
         width: 100%;
-        margin-right: 0;
-        margin-bottom: 8px;
       }
-      
-      .title-section h1 {
-        font-size: 20px;
+
+      :host ::ng-deep .ant-radio-group {
+        display: flex;
+        width: 100%;
+      }
+
+      :host ::ng-deep .ant-radio-button-wrapper {
+        flex: 1;
+        text-align: center;
+      }
+
+      :host ::ng-deep .ant-fullcalendar-header {
+        padding: 12px;
+      }
+
+      :host ::ng-deep .ant-fullcalendar-date {
+        margin: 2px;
+        padding: 2px;
+        min-height: 50px;
       }
     }
-    
+
     /* Responsividade para telas muito pequenas */
     @media (max-width: 400px) {
       .container {
         padding: 8px;
       }
-      
+
       .calendario-card {
-        box-shadow: none;
-        border: none;
+        padding: 8px;
       }
-      
+
       :host ::ng-deep .ant-fullcalendar-header {
-        padding: 8px 4px;
+        padding: 8px;
       }
-      
+
+      :host ::ng-deep .ant-fullcalendar-date {
+        margin: 1px;
+        padding: 1px;
+        min-height: 40px;
+      }
+
       :host ::ng-deep .ant-fullcalendar-column-header {
-        padding: 4px 0;
+        padding: 0;
         font-size: 12px;
       }
-      
-      :host ::ng-deep .ant-fullcalendar-date {
-        padding: 2px;
-        height: auto;
+
+      :host ::ng-deep .ant-fullcalendar-date-value {
+        font-size: 12px;
+      }
+
+      :host ::ng-deep .ant-badge {
+        transform: scale(0.8);
+        margin: 1px;
+      }
+
+      /* Ajusta o popover para telas pequenas */
+      :host ::ng-deep .ant-popover {
+        max-width: 250px;
+      }
+
+      :host ::ng-deep .ant-popover-inner-content {
+        padding: 8px;
+      }
+
+      :host ::ng-deep .ant-popover-inner-content p {
+        margin-bottom: 4px;
+        font-size: 12px;
+      }
+
+      /* Ajusta os botões no popover */
+      .popover-actions button {
+        font-size: 12px;
+        height: 24px;
+        padding: 0 8px;
+      }
+
+      /* Ajusta o layout do cabeçalho */
+      .page-header {
+        margin-bottom: 12px;
+      }
+
+      .title-section h1 {
+        font-size: 18px;
+        margin-bottom: 4px;
+      }
+
+      .title-section p {
+        font-size: 12px;
+      }
+
+      /* Ajusta os botões de ação */
+      .actions-section button {
+        font-size: 12px;
+        height: 28px;
+      }
+
+      /* Ajusta os radio buttons */
+      :host ::ng-deep .ant-radio-button-wrapper {
+        padding: 0 8px;
+        font-size: 12px;
+        height: 28px;
+        line-height: 26px;
       }
     }
   `]

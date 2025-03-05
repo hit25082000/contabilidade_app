@@ -89,8 +89,8 @@ interface Documento {
         nzType="error"
         [nzMessage]="erro()"
         nzShowIcon
-        class="error-alert"
-      ></nz-alert>
+        class="error-alert">
+      </nz-alert>
 
       <!-- Barra de pesquisa -->
       <div class="search-bar">
@@ -100,67 +100,109 @@ interface Documento {
             nz-input
             placeholder="Buscar documentos..."
             [(ngModel)]="termoBusca"
-            (ngModelChange)="filtrarDocumentos()"
-          />
+            (ngModelChange)="filtrarDocumentos()"/>
         </nz-input-group>
         <ng-template #suffixIconSearch>
           <span nz-icon nzType="search"></span>
         </ng-template>
       </div>
 
-      <!-- Tabela de documentos -->
-      <nz-table
-        #basicTable
-        [nzData]="documentosFiltrados()"
-        [nzLoading]="isLoading()"
-        [nzShowPagination]="true"
-        [nzPageSize]="5">
-        <thead>
-          <tr>
-            <th nzWidth="40%">Nome do Documento</th>
-            <th nzWidth="20%">Data de Upload</th>
-            <th nzWidth="15%">Tamanho</th>
-            <th nzWidth="25%">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let documento of basicTable.data">
-            <td>
-              <span nz-tooltip [nzTooltipTitle]="documento.nome">
-                {{ documento.nome | slice:0:30 }}{{ documento.nome.length > 30 ? '...' : '' }}
-              </span>
-            </td>
-            <td>{{ documento.dataUpload | date:'dd/MM/yyyy HH:mm' }}</td>
-            <td>{{ formatarTamanho(documento.tamanho) }}</td>
-            <td>
-              <button 
-                (click)="visualizarDocumento(documento)" 
-                nz-button 
-                nzType="link"
-                nz-tooltip="Visualizar PDF">
-                <span nz-icon nzType="eye"></span>
-              </button>
-              <button 
-                (click)="baixarDocumento(documento)" 
-                nz-button 
-                nzType="link"
-                nz-tooltip="Baixar PDF">
-                <span nz-icon nzType="download"></span>
-              </button>
-              <button 
-                nz-button 
-                nzType="link" 
-                nzDanger
-                nz-popconfirm
-                nzPopconfirmTitle="Tem certeza que deseja excluir este documento?"
-                (nzOnConfirm)="excluirDocumento(documento)"
-                nz-tooltip="Excluir PDF">
-                <span nz-icon nzType="delete"></span>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </nz-table>
+      <!-- Visualização em tabela para desktop -->
+      <div class="desktop-view">
+        <nz-table
+          #basicTable
+          [nzData]="documentosFiltrados()"
+          [nzLoading]="isLoading()"
+          [nzShowPagination]="true"
+          [nzPageSize]="5">
+          <thead>
+            <tr>
+              <th nzWidth="40%">Nome do Documento</th>
+              <th nzWidth="20%">Data de Upload</th>
+              <th nzWidth="15%">Tamanho</th>
+              <th nzWidth="25%">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let documento of basicTable.data">
+              <td>
+                <span nz-tooltip [nzTooltipTitle]="documento.nome">
+                  {{ documento.nome | slice:0:30 }}{{ documento.nome.length > 30 ? '...' : '' }}
+                </span>
+              </td>
+              <td>{{ documento.dataUpload | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ formatarTamanho(documento.tamanho) }}</td>
+              <td>
+                <button 
+                  (click)="visualizarDocumento(documento)" 
+                  nz-button 
+                  nzType="link"
+                  nz-tooltip="Visualizar PDF">
+                  <span nz-icon nzType="eye"></span>
+                </button>
+                <button 
+                  (click)="baixarDocumento(documento)" 
+                  nz-button 
+                  nzType="link"
+                  nz-tooltip="Baixar PDF">
+                  <span nz-icon nzType="download"></span>
+                </button>
+                <button 
+                  nz-button 
+                  nzType="link" 
+                  nzDanger
+                  nz-popconfirm
+                  nzPopconfirmTitle="Tem certeza que deseja excluir este documento?"
+                  (nzOnConfirm)="excluirDocumento(documento)"
+                  nz-tooltip="Excluir PDF">
+                  <span nz-icon nzType="delete"></span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+
+      <!-- Visualização em cards para mobile -->
+      <div class="mobile-view">
+        <div class="documento-card" *ngFor="let documento of documentosFiltrados()">
+          <div class="documento-header">
+            <span class="documento-nome" nz-tooltip [nzTooltipTitle]="documento.nome">
+              {{ documento.nome | slice:0:25 }}{{ documento.nome.length > 25 ? '...' : '' }}
+            </span>
+            <span class="documento-data">{{ documento.dataUpload | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="documento-info">
+            <span class="documento-tamanho">{{ formatarTamanho(documento.tamanho) }}</span>
+          </div>
+          <div class="documento-actions">
+            <button 
+              (click)="visualizarDocumento(documento)" 
+              nz-button 
+              nzType="default"
+              nzSize="small">
+              <span nz-icon nzType="eye"></span> Visualizar
+            </button>
+            <button 
+              (click)="baixarDocumento(documento)" 
+              nz-button 
+              nzType="default"
+              nzSize="small">
+              <span nz-icon nzType="download"></span> Baixar
+            </button>
+            <button 
+              nz-button 
+              nzType="default" 
+              nzDanger
+              nzSize="small"
+              nz-popconfirm
+              nzPopconfirmTitle="Tem certeza que deseja excluir este documento?"
+              (nzOnConfirm)="excluirDocumento(documento)">
+              <span nz-icon nzType="delete"></span> Excluir
+            </button>
+          </div>
+        </div>
+      </div>
 
       <nz-empty 
         *ngIf="documentosFiltrados().length === 0 && !isLoading()"
@@ -229,6 +271,53 @@ interface Documento {
       button {
         padding: 4px 8px;
       }
+
+      /* Ajustes para tabela responsiva */
+      :host ::ng-deep .ant-table {
+        overflow-x: auto;
+      }
+
+      :host ::ng-deep .ant-table-thead > tr > th,
+      :host ::ng-deep .ant-table-tbody > tr > td {
+        white-space: nowrap;
+        padding: 8px 4px;
+        font-size: 12px;
+      }
+
+      /* Reorganiza colunas para melhor visualização */
+      :host ::ng-deep .ant-table-thead > tr > th:nth-child(3),
+      :host ::ng-deep .ant-table-tbody > tr > td:nth-child(3) {
+        display: none;
+      }
+
+      /* Ajusta botões de ação para economizar espaço */
+      :host ::ng-deep .ant-btn {
+        min-width: 24px;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        margin: 0 2px;
+      }
+
+      /* Ajusta ícones nos botões */
+      :host ::ng-deep .anticon {
+        font-size: 14px;
+        margin: 0;
+      }
+
+      /* Ajusta tooltips */
+      :host ::ng-deep .ant-tooltip {
+        max-width: 200px;
+      }
+
+      /* Ajusta o container do PDF viewer */
+      .pdf-container {
+        height: 300px;
+      }
+
+      iframe {
+        height: 300px;
+      }
     }
 
     .pdf-container {
@@ -259,6 +348,124 @@ interface Documento {
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+
+    /* Estilos para visualização desktop/mobile */
+    .desktop-view {
+      display: block;
+    }
+
+    .mobile-view {
+      display: none;
+    }
+
+    /* Estilos para cards de documentos */
+    .documento-card {
+      border: 1px solid #f0f0f0;
+      border-radius: 4px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+    }
+
+    .documento-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .documento-nome {
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.85);
+    }
+
+    .documento-data {
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.45);
+    }
+
+    .documento-info {
+      margin-bottom: 12px;
+    }
+
+    .documento-tamanho {
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.65);
+    }
+
+    .documento-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .documento-actions button {
+      flex: 1;
+      min-width: 80px;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+      .desktop-view {
+        display: none;
+      }
+
+      .mobile-view {
+        display: block;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .container {
+        padding: 8px;
+      }
+
+      .section-title {
+        font-size: 18px;
+      }
+
+      .section-description {
+        font-size: 14px;
+      }
+
+      .documento-card {
+        padding: 8px;
+        margin-bottom: 8px;
+      }
+
+      .documento-actions {
+        gap: 4px;
+      }
+
+      .documento-actions button {
+        font-size: 12px;
+        padding: 4px 8px;
+        height: 28px;
+      }
+
+      :host ::ng-deep .ant-card-body {
+        padding: 12px;
+      }
+
+      /* Ajusta o modal de PDF para telas pequenas */
+      :host ::ng-deep .ant-modal {
+        max-width: 100vw;
+        margin: 8px;
+      }
+
+      :host ::ng-deep .ant-modal-body {
+        padding: 12px;
+      }
+
+      .pdf-container {
+        height: 300px;
+      }
+
+      iframe {
+        height: 300px;
+      }
     }
   `]
 })
