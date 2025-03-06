@@ -6,6 +6,7 @@ import { AuthStore } from './auth.store';
 import { AuthSupabaseService } from '../providers/auth.provider';
 import { DatabaseService } from '../../services/database.service';
 import { isPlatformBrowser } from '@angular/common';
+import { LoadingService } from '../../services/loading.service';
 /**
  * Serviço de autenticação que integra o provedor de autenticação com o store
  * Utiliza signals e effects do Angular 19 para gerenciamento de estado
@@ -20,22 +21,38 @@ export class AuthService {
     private authStore = inject(AuthStore);
     private router = inject(Router);
     private readonly platformId = inject(PLATFORM_ID);
+    private loadingService = inject(LoadingService);
 
     constructor() {
         // Configura o listener de mudanças no estado de autenticação (apenas no navegador)
         if (isPlatformBrowser(this.platformId)) {
-            this.authProvider.onAuthStateChanged((session) => {
-                if (session) {
-                    this.handleSession(session);
-                } else {
-                    // Verifica se há uma sessão armazenada no localStorage
-                    const storedSession = this.authStore.getStoredSession();
-                    if (storedSession) {
-                        this.authStore.setSession(storedSession);
+            // Primeiro, verifica se há um usuário autenticado ao iniciar
+            // Isso é feito antes de configurar o listener para evitar processamentos duplicados
+            this.checkCurrentUser().then(() => {
+                // Depois de verificar a sessão inicial, configura o listener para mudanças futuras
+                this.authProvider.onAuthStateChanged((session) => {
+                    console.log('Evento de autenticação recebido:', session ? 'Com sessão' : 'Sem sessão');
+                    
+                    if (session) {
+                        // Evita processar a sessão novamente se já foi processada pelo checkCurrentUser
+                        const currentSession = this.authStore.session();
+                        if (!currentSession || currentSession.access_token !== session.access_token) {
+                            console.log('Processando nova sessão do evento de autenticação');
+                            this.handleSession(session);
+                        } else {
+                            console.log('Sessão já processada, ignorando');
+                        }
                     } else {
-                        this.authStore.clearSession();
+                        // Apenas limpa a sessão se não houver uma armazenada localmente
+                        const storedSession = this.authStore.getStoredSession();
+                        if (!storedSession) {
+                            console.log('Limpando sessão');
+                            this.authStore.clearSession();
+                        } else {
+                            console.log('Mantendo sessão armazenada localmente');
+                        }
                     }
-                }
+                });
             });
 
             // Efeito para monitorar erros do provedor de autenticação
@@ -51,9 +68,6 @@ export class AuthService {
                 const isLoading = this.authProvider.isLoading();
                 this.authStore.setLoading(isLoading);
             });
-
-            // Verifica se há um usuário autenticado ao iniciar
-            this.checkCurrentUser();
         } else {
             console.log('AuthService: Ambiente de servidor, ignorando inicialização de listeners');
         }
@@ -61,57 +75,85 @@ export class AuthService {
 
     /**
      * Verifica se há um usuário autenticado ao iniciar
+     * @returns Promise que resolve quando a verificação estiver concluída
      */
     private async checkCurrentUser(): Promise<void> {
         try {
             this.authStore.setLoading(true);
+            this.loadingService.show();
             
             // Verifica se estamos no navegador
             if (!isPlatformBrowser(this.platformId)) {
                 console.log('checkCurrentUser: Ambiente de servidor, ignorando verificação de usuário');
                 this.authStore.setLoading(false);
+                this.loadingService.hide();
                 return;
             }
             
-            // Primeiro, tenta obter a sessão completa do Supabase
+            console.log('Iniciando verificação de sessão atual');
+            
+            // Primeiro, verifica se já temos uma sessão válida no store
+            const currentSession = this.authStore.session();
+            if (currentSession && currentSession.access_token) {
+                console.log('Sessão já existe no store, verificando validade');
+                
+                // Verifica se o token ainda é válido
+                try {
+                    const user = await this.authProvider.getCurrentUser();
+                    if (user) {
+                        console.log('Sessão atual é válida, mantendo');
+                        this.loadingService.hide();
+                        this.authStore.setLoading(false);
+                        return;
+                    }
+                } catch (error) {
+                    console.log('Erro ao verificar usuário atual, sessão pode estar expirada');
+                }
+            }
+            
+            // Tenta obter a sessão do Supabase
+            console.log('Tentando obter sessão do Supabase');
             const sessionResponse = await this.authProvider.getSession();
             
             if (sessionResponse.data?.session) {
                 console.log('Sessão encontrada no Supabase');
                 this.handleSession(sessionResponse.data.session);
+                this.loadingService.hide();
+                this.authStore.setLoading(false);
                 return;
             }
             
             // Se não encontrar sessão no Supabase, verifica no localStorage
+            console.log('Nenhuma sessão ativa no Supabase, verificando armazenamento local');
             const storedSession = this.authStore.getStoredSession();
             if (storedSession) {
                 console.log('Sessão encontrada no armazenamento local');
-                this.authStore.setSession(storedSession);
+                
+                // Verifica se a sessão armazenada ainda é válida
+                try {
+                    // Tenta obter o usuário atual para verificar se a sessão é válida
+                    const user = await this.authProvider.getCurrentUser();
+                    if (user) {
+                        console.log('Sessão do armazenamento local é válida');
+                        this.authStore.setSession(storedSession);
+                    } else {
+                        console.log('Sessão do armazenamento local é inválida, limpando');
+                        this.authStore.clearSession();
+                    }
+                } catch (error) {
+                    console.log('Erro ao verificar sessão do armazenamento local, limpando');
+                    this.authStore.clearSession();
+                }
+                
+                this.loadingService.hide();
+                this.authStore.setLoading(false);
                 return;
             }
             
-            // Se não encontrar sessão no localStorage, tenta obter apenas o usuário
-            try {
-                const user = await this.authProvider.getCurrentUser();
-                if (user) {
-                    console.log('Usuário encontrado');
-                    const token = await this.authProvider.getAccessToken();
-                    // Simula uma sessão para o handleSession
-                    const session = {
-                        user,
-                        access_token: token,
-                        refresh_token: '',
-                        expires_in: 3600
-                    };
-                    this.handleSession(session);
-                } else {
-                    console.log('Nenhum usuário autenticado encontrado');
-                    this.authStore.clearSession();
-                }
-            } catch (userError) {
-                console.error('Erro ao obter usuário atual:', userError);
-                this.authStore.clearSession();
-            }
+            // Se não encontrar sessão em nenhum lugar, limpa o estado
+            console.log('Nenhuma sessão encontrada, limpando estado');
+            this.authStore.clearSession();
+            
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
             this.authStore.setError(`Erro ao verificar usuário atual: ${errorMessage}`);
@@ -119,6 +161,7 @@ export class AuthService {
             this.authStore.clearSession();
         } finally {
             this.authStore.setLoading(false);
+            this.loadingService.hide();
         }
     }
 
@@ -308,7 +351,16 @@ export class AuthService {
     private handleSession(session: any): ISession {
         if (!session) throw new Error('Sessão inválida');
 
-        console.log('Processando sessão:', session);
+        // Verifica se já temos uma sessão idêntica no store
+        const currentSession = this.authStore.session();
+        if (currentSession && 
+            currentSession.access_token === (session.access_token || session.accessToken) &&
+            currentSession.user?.id === (session.user?.id || session.user?.uid)) {
+            console.log('Sessão idêntica já existe no store, ignorando processamento');
+            return currentSession;
+        }
+
+        console.log('Processando nova sessão');
         
         // Verifica se a sessão tem o formato esperado
         let user;
@@ -316,7 +368,10 @@ export class AuthService {
             user = session.user;
         } else if (session.data && session.data.user) {
             user = session.data.user;
-        } else {
+        } else if (session.role){
+            user = session;
+        } 
+        else {
             console.error('Formato de sessão não reconhecido:', session);
             throw new Error('Formato de sessão não reconhecido');
         }
@@ -329,7 +384,7 @@ export class AuthService {
             user: this.mapProviderUser(user)
         };
 
-        console.log('Sessão processada:', userSession);
+        console.log('Sessão processada e armazenada');
         this.authStore.setSession(userSession);
         return userSession;
     }
