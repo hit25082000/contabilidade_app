@@ -24,7 +24,9 @@ import {
   UnorderedListOutline,
   PlusOutline,
   FileDoneOutline,
-  FileExclamationOutline
+  FileExclamationOutline,
+  IdcardOutline,
+  PhoneOutline
 } from '@ant-design/icons-angular/icons';
 
 // Ícones que serão utilizados na aplicação
@@ -52,7 +54,9 @@ const icons = [
   UnorderedListOutline,
   PlusOutline,
   FileDoneOutline,
-  FileExclamationOutline
+  FileExclamationOutline,
+  IdcardOutline,
+  PhoneOutline
 ];
 
 /**
