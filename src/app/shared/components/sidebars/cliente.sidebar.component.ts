@@ -7,7 +7,6 @@ import { AuthStore } from '../../../core/auth/service/auth.store';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { AccountBookFill, FilePdfOutline, AlertOutline } from '@ant-design/icons-angular/icons';
 
 
 /**
@@ -74,7 +73,7 @@ import { AccountBookFill, FilePdfOutline, AlertOutline } from '@ant-design/icons
         <!-- Menu para Cliente -->
         <ng-container *ngIf="isCliente()">
           <li nz-menu-item routerLink="/cliente/documentos" routerLinkActive="ant-menu-item-selected">
-            <nz-icon nzType="file-pdf" nzTheme="outline" />
+            <span nz-icon nzType="file-pdf" nzTheme="outline"></span>
             <span>Meus Documentos</span> 
           </li>
           

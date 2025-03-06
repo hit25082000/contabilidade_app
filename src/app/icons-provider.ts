@@ -12,7 +12,19 @@ import {
   MenuUnfoldOutline,
   BellOutline,
   LogoutOutline,
-  SettingOutline
+  SettingOutline,
+  AccountBookFill,
+  FilePdfOutline,
+  AlertOutline,
+  TeamOutline,
+  FileTextOutline,
+  CalendarOutline,
+  BarChartOutline,
+  ClockCircleOutline,
+  UnorderedListOutline,
+  PlusOutline,
+  FileDoneOutline,
+  FileExclamationOutline
 } from '@ant-design/icons-angular/icons';
 
 // Ícones que serão utilizados na aplicação
@@ -28,7 +40,19 @@ const icons = [
   MenuUnfoldOutline,
   BellOutline,
   LogoutOutline,
-  SettingOutline
+  SettingOutline,
+  AccountBookFill,
+  FilePdfOutline,
+  AlertOutline,
+  TeamOutline,
+  FileTextOutline,
+  CalendarOutline,
+  BarChartOutline,
+  ClockCircleOutline,
+  UnorderedListOutline,
+  PlusOutline,
+  FileDoneOutline,
+  FileExclamationOutline
 ];
 
 /**
