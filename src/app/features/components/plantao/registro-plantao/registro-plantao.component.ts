@@ -264,7 +264,7 @@ export class RegistroPlantaoComponent implements OnInit {
     // Verifica se o usuário está autenticado e é um cliente
     if (!this.authStore.isAuthenticated() || !this.authStore.isCliente()) {
       this.message.error('Acesso não autorizado. Apenas clientes podem registrar plantões.');
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/']);
       return;
     }
     

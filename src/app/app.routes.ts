@@ -1,6 +1,7 @@
 // app.routes.ts
 import { Routes } from '@angular/router';
 import { authGuard, publicOnlyGuard } from './core/auth/guards/auth.guard';
+import { DashboardRedirectComponent } from './features/components/dashboard/dashboard-redirect.component';
 
 /**
  * Configuração de rotas principais da aplicação
@@ -46,6 +47,11 @@ export const routes: Routes = [
     {
         path: 'cliente',
         loadChildren: () => import('./pages/cliente/cliente.routes').then(m => m.CLIENTE_ROUTES)
+    },
+    {
+        path: 'dashboard',
+        canActivate: [authGuard],
+        component: DashboardRedirectComponent
     },
     // {
     //     path: 'acesso-negado',
