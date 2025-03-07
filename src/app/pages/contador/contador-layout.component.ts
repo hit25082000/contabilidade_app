@@ -26,27 +26,47 @@ import { ContadorHeaderComponent } from '../../shared/components/headers/contado
     ContadorHeaderComponent
   ],
   template: `
-    <nz-layout class="app-layout">
+    <nz-layout class="app-layout" [class.sidebar-collapsed]="isCollapsed">
       <!-- Sidebar compartilhado -->
-      <app-contador-sidebar [isCollapsed]="isCollapsed"></app-contador-sidebar>
+      <app-contador-sidebar 
+        [isCollapsed]="isCollapsed"
+        (collapsedChange)="onCollapsedChange($event)">
+      </app-contador-sidebar>
       
       <!-- Layout principal -->
-      <nz-layout>
+      <nz-layout class="main-layout">
         <!-- Header compartilhado -->
         <app-contador-header 
           [isCollapsed]="isCollapsed" 
           [notificationCount]="notificationCount()" 
-          (collapsedChange)="isCollapsed = $event">
+          (collapsedChange)="onCollapsedChange($event)">
         </app-contador-header>
         
         <!-- Conteúdo específico do contador -->
-        <router-outlet></router-outlet>
+        <nz-content class="main-content">
+          <router-outlet></router-outlet>
+        </nz-content>
       </nz-layout>
     </nz-layout>
   `,
   styles: [`
     .app-layout {
       min-height: 100vh;
+    }
+
+    .main-layout {
+      margin-left: 256px;
+      transition: margin-left 0.2s;
+    }
+
+    .sidebar-collapsed .main-layout {
+      margin-left: 80px;
+    }
+
+    .main-content {
+      padding: 24px;
+      min-height: calc(100vh - 64px);
+      background: #fff;
     }
   `]
 })
@@ -58,4 +78,9 @@ export class ContadorLayoutComponent {
   
   // Dados simulados para o dashboard
   notificationCount = signal<number>(3);
+
+  // Método para lidar com a mudança do estado de colapso
+  onCollapsedChange(collapsed: boolean): void {
+    this.isCollapsed = collapsed;
+  }
 } 

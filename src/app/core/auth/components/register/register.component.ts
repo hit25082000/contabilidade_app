@@ -16,6 +16,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzNotificationModule, NzNotificationService } from 'ng-zorro-antd/notification';
 
 @Component({
   selector: 'app-register',
@@ -33,7 +34,8 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
     NzIconModule,
     NzGridModule,
     NzSpinModule,
-    NzSelectModule
+    NzSelectModule,
+    NzNotificationModule
   ],
   template: `
     <div class="register-container">
@@ -342,6 +344,7 @@ export class RegisterComponent {
   private authStore = inject(AuthStore);
   private router = inject(Router);
   private fb = inject(FormBuilder);
+  private notification = inject(NzNotificationService);
   
   registerForm: FormGroup;
   submitted = false;
@@ -432,6 +435,13 @@ export class RegisterComponent {
     
     this.authService.register(email, password, userData).subscribe({
       next: (session) => {
+        // Exibe notificação de sucesso
+        this.notification.success(
+          'Cadastro Realizado com Sucesso',
+          'Um email de ativação foi enviado para o seu endereço de email. Por favor, verifique sua caixa de entrada e siga as instruções para ativar sua conta.',
+          { nzDuration: 8000 }
+        );
+
         // Redirecionar com base na role
         if (session.user?.role === 'contador') {
           this.router.navigateByUrl('/contador');

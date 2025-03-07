@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthStore } from '../../../core/auth/service/auth.store';
@@ -31,15 +31,16 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
       nzWidth="256px"
       nzBreakpoint="md"
       [(nzCollapsed)]="isCollapsed"
+      (nzCollapsedChange)="collapsedChange.emit($event)"
       [nzTrigger]="null">
       <div class="sidebar-logo">
-        <a href="javascript:void(0)">
+        <a routerLink="/contador/dashboard">
           <span nz-icon nzType="audit" nzTheme="outline"></span>
           <h1 *ngIf="!isCollapsed">Contabilidade App</h1>
         </a>
       </div>
       <ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="isCollapsed">
-        <li nz-menu-item nzSelected routerLink="/dashboard" routerLinkActive="ant-menu-item-selected">
+        <li nz-menu-item nzSelected routerLink="/contador/dashboard" routerLinkActive="ant-menu-item-selected">
           <span nz-icon nzType="dashboard"></span>
           <span>Dashboard</span>
         </li>
@@ -168,6 +169,7 @@ export class ContadorSidebarComponent {
   
   // Input para controlar o estado de colapso do sidebar
   @Input() isCollapsed = false;
+  @Output() collapsedChange = new EventEmitter<boolean>();
   
   // Signals do AuthStore
   isContador = this.authStore.isContador;

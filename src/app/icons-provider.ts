@@ -26,7 +26,8 @@ import {
   FileDoneOutline,
   FileExclamationOutline,
   IdcardOutline,
-  PhoneOutline
+  PhoneOutline,
+  UserAddOutline
 } from '@ant-design/icons-angular/icons';
 
 // Ícones que serão utilizados na aplicação
@@ -56,7 +57,8 @@ const icons = [
   FileDoneOutline,
   FileExclamationOutline,
   IdcardOutline,
-  PhoneOutline
+  PhoneOutline,
+  UserAddOutline
 ];
 
 /**

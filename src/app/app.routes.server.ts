@@ -26,10 +26,18 @@ export const serverRoutes: ServerRoute[] = [
     path: 'contador/dashboard', // Dashboard do contador
     renderMode: RenderMode.Server,
   },
-  // {
-  //   path: 'contador/clientes', // Lista de clientes do contador
-  //   renderMode: RenderMode.Server,
-  // },
+  {
+    path: 'contador/clientes', // Lista de clientes do contador
+    renderMode: RenderMode.Server,
+  },
+  {
+    path: 'contador/clientes/:id', // Detalhes do cliente
+    renderMode: RenderMode.Server,
+  },
+  {
+    path: 'contador/clientes/:id/documentos', // Documentos do cliente
+    renderMode: RenderMode.Server,
+  },
   // {
   //   path: 'contador/documentos', // Documentos do contador
   //   renderMode: RenderMode.Server,

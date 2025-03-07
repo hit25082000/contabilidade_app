@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { ContadorLayoutComponent } from './contador-layout.component';
 import { authGuard, contadorGuard } from '../../core/auth/guards/auth.guard';
+import { GerenciarClientesComponent } from './clientes/gerenciar-clientes.component';
 
 /**
  * Rotas para a área do contador
@@ -20,12 +21,25 @@ export const CONTADOR_ROUTES: Routes = [
       {
         path: 'dashboard',
         loadComponent: () => import('../../features/components/dashboard/dashboard.component').then(m => m.DashboardComponent)
+      },
+      {
+        path: 'clientes',
+        children: [
+          {
+            path: '',
+            component: GerenciarClientesComponent
+          },
+          {
+            path: ':id',
+            loadComponent: () => import('./clientes/detalhes-cliente.component').then(m => m.DetalhesClienteComponent)
+          },
+          {
+            path: ':id/documentos',
+            loadComponent: () => import('./clientes/documentos-cliente.component').then(m => m.DocumentosClienteComponent)
+          }
+        ]
       }
       // Outras rotas específicas do contador serão adicionadas aqui
-      // {
-      //   path: 'clientes',
-      //   loadChildren: () => import('./clientes/clientes.routes').then(m => m.CLIENTES_ROUTES)
-      // },
       // {
       //   path: 'documentos',
       //   loadChildren: () => import('./documentos/documentos.routes').then(m => m.DOCUMENTOS_ROUTES)
