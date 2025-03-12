@@ -103,8 +103,8 @@ export class ContadorClienteService {
     try {
       const { data, error } = await this.databaseService.supabase
         .from('contador_clientes')
-        .insert([
-          { contador_id: contadorId, cliente_id: clienteId }
+        .upsert([
+          { contador_id: contadorId, cliente_id: clienteId, status: "ativo" }
         ]);
 
       if (error) throw error;

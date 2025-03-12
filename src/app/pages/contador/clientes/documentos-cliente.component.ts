@@ -1,8 +1,10 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DatabaseService } from '../../../core/services/database.service';
 import { IUser } from '../../../core/auth/models/user.interface';
+import { StorageService } from '../../../core/storage/services/storage.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 // Componentes NG-ZORRO
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -16,6 +18,9 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzUploadModule } from 'ng-zorro-antd/upload';
+import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 
 /**
  * Interface para documentos
@@ -28,6 +33,26 @@ interface IDocumento {
   status: string;
   tamanho: string;
   url?: string;
+  path?: string;
+  mimetype?: string;
+}
+
+// Interface para os objetos de arquivo retornados pelo storage
+interface FileObject {
+  name: string;
+  id: string;
+  updated_at: string;
+  created_at: string;
+  last_accessed_at: string;
+  metadata: {
+    eTag: string;
+    size: number;
+    mimetype: string;
+    cacheControl: string;
+    lastModified: string;
+    contentLength: number;
+    httpStatusCode: number;
+  };
 }
 
 /**
@@ -49,255 +74,142 @@ interface IDocumento {
     NzDividerModule,
     NzTagModule,
     NzEmptyModule,
-    NzUploadModule
+    NzUploadModule,
+    NzSkeletonModule,
+    NzToolTipModule,
+    NzModalModule
   ],
   template: `
-    <div class="container">
-      <!-- Breadcrumb -->
-      <nz-breadcrumb class="breadcrumb">
-        <nz-breadcrumb-item>Home</nz-breadcrumb-item>
-        <nz-breadcrumb-item>Contador</nz-breadcrumb-item>
-        <nz-breadcrumb-item routerLink="/contador/clientes">Clientes</nz-breadcrumb-item>
-        <nz-breadcrumb-item routerLink="/contador/clientes/{{ clienteId }}">Detalhes do Cliente</nz-breadcrumb-item>
-        <nz-breadcrumb-item>Documentos</nz-breadcrumb-item>
-      </nz-breadcrumb>
+    <div class="container mx-auto p-4">
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <div *ngIf="carregando()" class="flex justify-center my-8">
+          <nz-spin nzTip="Carregando informações..."></nz-spin>
+        </div>
 
-      <!-- Título da página -->
-      <div class="page-header">
-        <h1>Documentos do Cliente</h1>
-        <p *ngIf="cliente()">Documentos de {{ cliente()?.nome_completo }}</p>
-      </div>
-
-      <!-- Conteúdo principal -->
-      <nz-spin [nzSpinning]="carregando()">
-        <div *ngIf="cliente(); else semCliente">
-          <nz-card>
-            <div class="card-header">
-              <h2>Documentos</h2>
-              <div class="card-actions">
-                <button 
-                  nz-button 
-                  nzType="primary" 
-                >
-                  <span nz-icon nzType="upload"></span>
-                  Enviar Documento
-                </button>
-                <button 
-                  nz-button 
-                  nzType="default" 
-                  routerLink="/contador/clientes/{{ clienteId }}"
-                >
-                  <span nz-icon nzType="arrow-left"></span>
-                  Voltar
-                </button>
-              </div>
+        <div *ngIf="!carregando() && cliente()">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+            <div>
+              <h2 class="text-2xl font-semibold text-gray-800">
+                Documentos de {{ cliente()?.nome_completo }}
+              </h2>
+              <p class="text-gray-600">
+                Email: {{ cliente()?.email }}
+              </p>
             </div>
+            <div class="mt-4 md:mt-0">
+              <button 
+                nz-button 
+                nzType="default" 
+                [routerLink]="['/contador/clientes']"
+                class="flex items-center"
+              >
+                <span nz-icon nzType="arrow-left"></span>
+                Voltar
+              </button>
+            </div>
+          </div>
 
-            <nz-divider></nz-divider>
+          <nz-divider></nz-divider>
 
-            <!-- Tabela de documentos -->
-            <nz-table 
-              #documentosTable 
-              [nzData]="documentos()" 
-              [nzPageSize]="10"
-              [nzShowSizeChanger]="true"
-              [nzPageSizeOptions]="[5, 10, 20, 50]"
-              [nzLoading]="carregandoDocumentos()"
-            >
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>Tipo</th>
-                  <th>Data</th>
-                  <th>Tamanho</th>
-                  <th>Status</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let documento of documentosTable.data">
-                  <td>{{ documento.nome }}</td>
-                  <td>{{ documento.tipo }}</td>
-                  <td>{{ formatarData(documento.data) }}</td>
-                  <td>{{ documento.tamanho }}</td>
-                  <td>
-                    <nz-tag [nzColor]="getStatusColor(documento.status)">
-                      {{ documento.status }}
-                    </nz-tag>
-                  </td>
-                  <td>
+          <!-- Tabela de documentos -->
+          <nz-table 
+            #documentosTable 
+            [nzData]="documentos()" 
+            [nzPageSize]="10"
+            [nzShowSizeChanger]="true"
+            [nzPageSizeOptions]="[5, 10, 20, 50]"
+            [nzLoading]="carregandoDocumentos()"
+          >
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>Data</th>
+                <th>Tamanho</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let documento of documentosTable.data">
+                <td>{{ documento.nome }}</td>
+                <td>{{ documento.tipo }}</td>
+                <td>{{ formatarData(documento.data) }}</td>
+                <td>{{ documento.tamanho }}</td>
+                <td>
+                  <nz-tag [nzColor]="getStatusColor(documento.status)">
+                    {{ documento.status }}
+                  </nz-tag>
+                </td>
+                <td>
+                  <div class="flex space-x-2">
                     <button 
                       nz-button 
                       nzType="primary" 
-                      nzSize="small" 
-                      [disabled]="!documento.url"
+                      nzShape="circle"
+                      nz-tooltip="Visualizar"
                       (click)="visualizarDocumento(documento)"
                     >
                       <span nz-icon nzType="eye"></span>
-                    </button>
-                    <nz-divider nzType="vertical"></nz-divider>
-                    <button 
-                      nz-button 
-                      nzType="default" 
-                      nzSize="small" 
-                      [disabled]="!documento.url"
-                      (click)="baixarDocumento(documento)"
-                    >
-                      <span nz-icon nzType="download"></span>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </nz-table>
+                    </button>              
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </nz-table>
 
-            <!-- Mensagem quando não há documentos -->
+          <!-- Mensagem quando não há documentos -->
+          <div *ngIf="!carregandoDocumentos() && documentos().length === 0" class="my-8">
             <nz-empty 
-              *ngIf="documentos().length === 0 && !carregandoDocumentos()" 
-              nzNotFoundContent="Nenhum documento encontrado para este cliente"
-              [nzNotFoundFooter]="emptyFooter"
-            >
-              <ng-template #emptyFooter>
-                <button nz-button nzType="primary">
-                  <span nz-icon nzType="upload"></span>
-                  Enviar Documento
-                </button>
-              </ng-template>
-            </nz-empty>
-          </nz-card>
+              nzDescription="Nenhum documento encontrado para este cliente"
+            ></nz-empty>
+          </div>
         </div>
 
-        <ng-template #semCliente>
-          <nz-card *ngIf="!carregando()">
-            <div class="empty-state">
-              <span nz-icon nzType="user" nzTheme="outline" style="font-size: 48px;"></span>
-              <h3>Cliente não encontrado</h3>
-              <p>O cliente solicitado não foi encontrado ou você não tem permissão para acessá-lo.</p>
-              <button nz-button nzType="primary" routerLink="/contador/clientes">
-                <span nz-icon nzType="arrow-left"></span>
-                Voltar para Lista de Clientes
-              </button>
-            </div>
-          </nz-card>
-        </ng-template>
-      </nz-spin>
+        <!-- Mensagem quando cliente não encontrado -->
+        <div *ngIf="!carregando() && !cliente()" class="my-8">
+          <nz-empty 
+            nzDescription="Cliente não encontrado"
+          ></nz-empty>
+          <div class="flex justify-center mt-4">
+            <button 
+              nz-button 
+              nzType="primary" 
+              [routerLink]="['/contador/clientes']"
+            >
+              Voltar para lista de clientes
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- Template para o modal de visualização de PDF -->
+    <ng-template #pdfViewerModal>
+      <div *ngIf="carregandoVisualizacao" class="flex justify-center my-4">
+        <nz-spin nzTip="Carregando documento..."></nz-spin>
+      </div>
+      
+      <div *ngIf="!carregandoVisualizacao && urlSegura" class="pdf-container">
+        <iframe 
+          [src]="urlSegura" 
+          width="100%" 
+          height="600px" 
+          frameborder="0"
+          class="rounded-lg"
+        ></iframe>
+      </div>
+      
+      <div *ngIf="!carregandoVisualizacao && !urlSegura" class="my-4 text-center">
+        <p class="text-red-500">Não foi possível carregar o documento.</p>
+      </div>
+    </ng-template>
   `,
   styles: [`
-    .container {
-      padding: 24px;
-      background: #fff;
-      min-height: 100%;
-    }
-
-    .breadcrumb {
-      margin-bottom: 16px;
-    }
-
-    .page-header {
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #f0f0f0;
-    }
-
-    .page-header h1 {
-      margin-bottom: 8px;
-      font-size: 24px;
-      font-weight: 500;
-    }
-
-    .page-header p {
-      margin-bottom: 0;
-      color: rgba(0, 0, 0, 0.65);
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .card-header h2 {
-      margin-bottom: 0;
-      font-size: 20px;
-      font-weight: 500;
-    }
-
-    .card-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 48px 0;
-      text-align: center;
-    }
-
-    .empty-state h3 {
-      margin: 16px 0 8px;
-      font-size: 18px;
-      font-weight: 500;
-    }
-
-    .empty-state p {
-      margin-bottom: 24px;
-      color: rgba(0, 0, 0, 0.45);
-    }
-
-    /* Responsividade */
-    @media (max-width: 768px) {
-      .card-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-      }
-
-      .card-actions {
-        width: 100%;
-      }
-
-      .card-actions button {
-        flex: 1;
-      }
-    }
-
-    @media (max-width: 576px) {
-      .container {
-        padding: 16px;
-      }
-
-      .page-header h1 {
-        font-size: 20px;
-      }
-    }
-
-    @media (max-width: 400px) {
-      .container {
-        padding: 12px;
-      }
-
-      :host ::ng-deep .ant-table {
-        overflow-x: auto;
-      }
-
-      :host ::ng-deep .ant-table-thead > tr > th,
-      :host ::ng-deep .ant-table-tbody > tr > td {
-        white-space: nowrap;
-        padding: 8px 4px;
-        font-size: 12px;
-      }
-
-      /* Esconde colunas menos importantes em telas pequenas */
-      :host ::ng-deep .ant-table-thead > tr > th:nth-child(2),
-      :host ::ng-deep .ant-table-tbody > tr > td:nth-child(2),
-      :host ::ng-deep .ant-table-thead > tr > th:nth-child(4),
-      :host ::ng-deep .ant-table-tbody > tr > td:nth-child(4) {
-        display: none;
-      }
+    .pdf-container {
+      width: 100%;
+      height: 600px;
+      overflow: hidden;
     }
   `]
 })
@@ -306,6 +218,9 @@ export class DocumentosClienteComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private databaseService = inject(DatabaseService);
   private messageService = inject(NzMessageService);
+  private storageService = inject(StorageService);
+  private modal = inject(NzModalService);
+  private sanitizer = inject(DomSanitizer);
 
   // Signals
   cliente = signal<IUser | null>(null);
@@ -315,6 +230,12 @@ export class DocumentosClienteComponent implements OnInit {
 
   // Propriedades
   clienteId = '';
+  documentoAtual: IDocumento | null = null;
+  urlSegura: SafeResourceUrl | null = null;
+  carregandoVisualizacao = false;
+  
+  // Template para o modal de visualização de documentos
+  @ViewChild('pdfViewerModal') pdfViewerModal!: TemplateRef<any>;
 
   ngOnInit(): void {
     this.clienteId = this.route.snapshot.paramMap.get('id') || '';
@@ -350,77 +271,154 @@ export class DocumentosClienteComponent implements OnInit {
   }
 
   /**
-   * Carrega os documentos do cliente
-   * Nota: Esta é uma implementação simulada, deve ser substituída pela implementação real
+   * Carrega os documentos do cliente usando o StorageService
    */
   async carregarDocumentos(): Promise<void> {
     try {
+      if (!this.clienteId) {
+        this.messageService.error('ID do cliente não encontrado');
+        return;
+      }
+
       this.carregandoDocumentos.set(true);
       
-      // Simulação de dados - deve ser substituída pela chamada real à API
-      // Aguarda 1 segundo para simular o carregamento
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Caminho para os documentos do cliente
+      const clientePath = `documentos_${this.clienteId}`;
       
-      // Dados simulados
-      const documentosSimulados: IDocumento[] = [
-        {
-          id: '1',
-          nome: 'Nota Fiscal 12345',
-          tipo: 'NF-e',
-          data: '2023-06-01',
-          status: 'enviado',
-          tamanho: '1.2 MB',
-          url: '#'
-        },
-        {
-          id: '2',
-          nome: 'Declaração IR 2023',
-          tipo: 'IRPF',
-          data: '2023-05-20',
-          status: 'pendente',
-          tamanho: '3.5 MB',
-          url: '#'
-        },
-        {
-          id: '3',
-          nome: 'Folha de Pagamento',
-          tipo: 'RH',
-          data: '2023-05-15',
-          status: 'processado',
-          tamanho: '0.8 MB',
-          url: '#'
+      // Busca os arquivos no storage
+      const files = await this.storageService.listFiles(clientePath);
+      
+      // Transforma os objetos FileObject em objetos IDocumento para a UI
+      const docs = files.map((file: FileObject) => {
+        // Gera a URL pública para o arquivo
+        const url = this.storageService.getPublicUrl(`${clientePath}/${file.name}`);
+        
+        // Determina o tipo de documento baseado no mimetype ou extensão
+        let tipo = 'Documento';
+        if (file.metadata?.mimetype) {
+          if (file.metadata.mimetype.includes('pdf')) {
+            tipo = 'PDF';
+          } else if (file.metadata.mimetype.includes('image')) {
+            tipo = 'Imagem';
+          } else if (file.metadata.mimetype.includes('excel') || file.metadata.mimetype.includes('spreadsheet')) {
+            tipo = 'Planilha';
+          } else if (file.metadata.mimetype.includes('word') || file.metadata.mimetype.includes('document')) {
+            tipo = 'Texto';
+          }
         }
-      ];
+        
+        // Formata o tamanho do arquivo
+        const tamanho = this.formatarTamanho(file.metadata?.size || 0);
+        
+        return {
+          id: file.id,
+          nome: file.name,
+          tipo: tipo,
+          data: file.created_at,
+          status: 'disponível', // Status padrão para documentos carregados
+          tamanho: tamanho,
+          url: url,
+          path: `${clientePath}/${file.name}`,
+          mimetype: file.metadata?.mimetype
+        } as IDocumento;
+      });
+
+      this.documentos.set(docs);
       
-      this.documentos.set(documentosSimulados);
+      if (docs.length === 0) {
+        this.messageService.info('Nenhum documento encontrado para este cliente');
+      }
     } catch (error) {
       console.error('Erro ao carregar documentos:', error);
-      this.messageService.error('Erro ao carregar documentos do cliente');
+      this.messageService.error('Erro ao carregar documentos. Tente novamente.');
     } finally {
       this.carregandoDocumentos.set(false);
     }
   }
 
   /**
-   * Visualiza um documento
+   * Formata o tamanho do arquivo para exibição
+   * @param bytes Tamanho em bytes
+   * @returns Tamanho formatado (ex: 1.2 MB)
+   */
+  formatarTamanho(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  /**
+   * Visualiza um documento usando URL assinada
    * @param documento - Documento a ser visualizado
    */
-  visualizarDocumento(documento: IDocumento): void {
-    // Implementação simulada - deve ser substituída pela implementação real
-    this.messageService.info(`Visualizando documento: ${documento.nome}`);
+  async visualizarDocumento(documento: IDocumento): Promise<void> {
+    if (!documento.path) {
+      this.messageService.error('Caminho do documento não disponível');
+      return;
+    }
     
-    if (documento.url) {
-      window.open(documento.url, '_blank');
+    try {
+      this.carregandoVisualizacao = true;
+      this.documentoAtual = documento;
+      
+      // Gera URL assinada com validade de 5 minutos (300 segundos)
+      const urlAssinada = await this.storageService.createSignedUrl(documento.path, 300);
+      
+      if (!urlAssinada) {
+        this.messageService.error('Não foi possível gerar URL para visualização');
+        this.carregandoVisualizacao = false;
+        return;
+      }
+      
+      // Sanitiza a URL para uso seguro no iframe
+      this.urlSegura = this.sanitizer.bypassSecurityTrustResourceUrl(urlAssinada);
+      this.carregandoVisualizacao = false;
+      
+      // Abre o modal com o visualizador de PDF
+      this.modal.create({
+        nzTitle: documento.nome,
+        nzContent: this.pdfViewerModal,
+        nzWidth: '80%',
+        nzFooter: null,
+        nzCentered: true
+      });
+    } catch (error) {
+      console.error('Erro ao visualizar documento:', error);
+      this.messageService.error('Erro ao visualizar documento');
+      this.carregandoVisualizacao = false;
     }
   }
 
   /**
-   * Baixa um documento
+   * Baixa um documento usando URL assinada
    * @param documento - Documento a ser baixado
    */
-  baixarDocumento(documento: IDocumento): void {
-    // Implementação simulada - deve ser substituída pela implementação real
-    this.messageService.success(`Documento baixado: ${documento.nome}`);
+  async baixarDocumento(documento: IDocumento): Promise<void> {
+    if (!documento.path) {
+      this.messageService.error('Caminho do documento não disponível');
+      return;
+    }
+    
+    try {
+      // Gera URL assinada com validade de 60 segundos
+      const urlAssinada = await this.storageService.createSignedUrl(documento.path, 60);
+      
+      if (!urlAssinada) {
+        this.messageService.error('Não foi possível gerar URL para download');
+        return;
+      }
+      
+      // Abre a URL em uma nova aba para download
+      window.open(urlAssinada, '_blank');
+      this.messageService.success(`Documento baixado: ${documento.nome}`);
+    } catch (error) {
+      console.error('Erro ao baixar documento:', error);
+      this.messageService.error('Erro ao baixar documento');
+    }
   }
 
   /**
