@@ -48,4 +48,35 @@ export class DatabaseService {
       .eq('id', id)
       .single()
   }
+  
+  /**
+   * Atualiza o perfil do usuário na tabela profiles
+   * @param userId - ID do usuário (vem do auth)
+   * @param profileData - Dados do perfil do usuário para atualizar
+   */
+  async updateProfile(userId: string, profileData: any) {
+    try {
+      console.log('Atualizando perfil para usuário:', userId);
+      console.log('Dados do perfil:', profileData);
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          ...profileData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Erro ao atualizar perfil:', error);
+        throw error;
+      }
+
+      console.log('Perfil atualizado com sucesso');
+      return data;
+    } catch (error) {
+      console.error('Erro detalhado ao atualizar perfil:', error);
+      throw error;
+    }
+  }
 }

@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { AuthStore } from '../../service/auth.store';
 import { AuthService } from '../../service/auth.service';
+import { DatabaseService } from '../../../services/database.service';
 
 // Importações do NG-ZORRO
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -17,6 +18,16 @@ import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzNotificationModule, NzNotificationService } from 'ng-zorro-antd/notification';
+
+// Interface para o perfil do usuário
+interface UserProfile {
+  nome_completo: string;
+  cpf_cnpj: string;
+  telefone: string;
+  role: string;
+  email: string;
+  crc?: string; // opcional, apenas para contadores
+}
 
 @Component({
   selector: 'app-register',
@@ -398,7 +409,6 @@ export class RegisterComponent {
   onSubmit() {
     this.submitted = true;
     
-    // Retorna se o formulário for inválido
     if (this.registerForm.invalid) {
       Object.values(this.registerForm.controls).forEach(control => {
         if (control.invalid) {
@@ -419,7 +429,19 @@ export class RegisterComponent {
       crc 
     } = this.registerForm.value;
     
+    // Log dos dados do formulário
+    console.log('Dados do formulário:', {
+      email,
+      nome_completo,
+      cpf_cnpj,
+      role,
+      telefone,
+      crc
+    });
+
     // Preparar dados do usuário para registro
+    // Estes dados estarão disponíveis em raw_user_meta_data
+    // e serão usados pelo trigger do Supabase
     const userData = {
       nome_completo,
       cpf_cnpj,
@@ -434,7 +456,9 @@ export class RegisterComponent {
     }
     
     this.authService.register(email, password, userData).subscribe({
-      next: (session) => {
+      next: async (session) => {
+        console.log('Registro bem-sucedido:', session);
+
         // Exibe notificação de sucesso
         this.notification.success(
           'Cadastro Realizado com Sucesso',
@@ -449,9 +473,16 @@ export class RegisterComponent {
           this.router.navigateByUrl('/cliente');
         }
       },
-      error: () => {
-        // O erro já é tratado pelo serviço e armazenado no store
+      error: (error) => {
+        console.error('Erro no registro:', error);
         this.submitted = false;
+        
+        // Mostrar mensagem de erro específica do registro
+        this.notification.error(
+          'Erro no Registro',
+          'Ocorreu um erro ao criar sua conta. Por favor, tente novamente.',
+          { nzDuration: 5000 }
+        );
       }
     });
   }
