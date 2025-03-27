@@ -77,6 +77,12 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
             <span>Meus Documentos</span> 
           </li>
           
+          <!-- Menu de credenciais governamentais -->
+          <li nz-menu-item routerLink="/cliente/credenciais" routerLinkActive="ant-menu-item-selected">
+            <span nz-icon nzType="lock" nzTheme="outline"></span>
+            <span>Credenciais Gov.</span> 
+          </li>
+          
           <!-- Menu de Plantões -->
           <li nz-submenu nzTitle="Plantões" nzIcon="clock-circle">
             <ul>

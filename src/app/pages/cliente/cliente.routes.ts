@@ -31,6 +31,24 @@ export const CLIENTE_ROUTES: Routes = [
         path: 'plantoes',
         children: PLANTAO_ROUTES
       },
+      // Rotas para credenciais governamentais
+      {
+        path: 'credenciais',
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('../../features/client/gov-credentials-list/gov-credentials-list.component').then(m => m.GovCredentialsListComponent)
+          },
+          {
+            path: 'nova',
+            loadComponent: () => import('../../features/client/gov-credentials-form/gov-credentials-form.component').then(m => m.GovCredentialsFormComponent)
+          },
+          {
+            path: 'editar/:id',
+            loadComponent: () => import('../../features/client/gov-credentials-form/gov-credentials-form.component').then(m => m.GovCredentialsFormComponent)
+          }
+        ]
+      },
       // Outras rotas específicas do cliente serão adicionadas aqui
     ]
   }

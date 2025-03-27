@@ -63,6 +63,10 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
             <span nz-icon nzType="calendar"></span>
             <span>Agenda Fiscal</span>
           </li>
+          <li nz-menu-item routerLink="/contador/credenciais" routerLinkActive="ant-menu-item-selected">
+            <span nz-icon nzType="key" nzTheme="outline"></span>
+            <span>Credenciais Gov.</span>
+          </li>
           <li nz-menu-item routerLink="/contador/relatorios" routerLinkActive="ant-menu-item-selected">
             <span nz-icon nzType="bar-chart"></span>
             <span>Relatórios</span>

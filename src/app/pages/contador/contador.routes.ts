@@ -38,6 +38,11 @@ export const CONTADOR_ROUTES: Routes = [
             loadComponent: () => import('./clientes/documentos-cliente.component').then(m => m.DocumentosClienteComponent)
           }
         ]
+      },
+      // Rota para acesso às credenciais governamentais dos clientes
+      {
+        path: 'credenciais',
+        loadComponent: () => import('../../features/accountant/gov-credentials-view/gov-credentials-view.component').then(m => m.GovCredentialsViewComponent)
       }
       // Outras rotas específicas do contador serão adicionadas aqui
       // {
