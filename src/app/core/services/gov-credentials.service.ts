@@ -297,68 +297,87 @@ export class GovCredentialsService {
       
       console.log('Buscando credenciais para contador:', validContadorId);
       
-      // Verificar se as tabelas necessárias existem
-      try {
-        const { count, error: countError } = await this.databaseService.supabase
-          .from('contador_clientes')
-          .select('*', { count: 'exact', head: true });
-        
-        if (countError) {
-          console.error('Erro ao verificar tabela contador_clientes:', countError);
-          // Tabela pode não existir, retornar array vazio
-          return [];
-        }
-      } catch (tableError) {
-        console.error('Possível erro de tabela não existente:', tableError);
-        return [];
-      }
-      
-      // Esta query busca credenciais dos clientes vinculados ao contador
-      const { data, error } = await this.databaseService.supabase
+      // Passo 1: Primeiro obtemos os IDs dos clientes vinculados ao contador
+      const { data: clientesRelacionados, error: errorClientes } = await this.databaseService.supabase
         .from('contador_clientes')
-        .select(`
-          cliente_id,
-          profiles:cliente_id (id, nome_completo, cpf_cnpj),
-          gov_credentials:cliente_id (
-            id, credential_name, created_at, updated_at, is_active
-          )
-        `)
+        .select('cliente_id')
         .eq('contador_id', validContadorId)
         .eq('status', 'ativo');
         
-      if (error) {
-        console.error('Erro ao buscar relações contador-cliente no Supabase:', error);
-        throw error;
+      if (errorClientes) {
+        console.error('Erro ao buscar relações contador-cliente:', errorClientes);
+        return [];
       }
       
-      // Formatar dados para mostrar apenas o necessário
-      const credentialsList = [];
-      for (const relation of data || []) {
-        if (relation.gov_credentials && relation.gov_credentials.length > 0) {
-          // Cada cliente deve ter seus dados em profiles
-          const clienteInfo = relation.profiles as any;
-          
-          if (!clienteInfo) {
-            console.warn('Dados do cliente não encontrados para relação:', relation);
-            continue;
-          }
-          
-          for (const credential of relation.gov_credentials) {
-            // Só incluir credenciais ativas
-            if (credential.is_active) {
-              credentialsList.push({
-                credential_id: credential.id,
-                credential_name: credential.credential_name,
-                cliente_id: clienteInfo.id,
-                cliente_nome: clienteInfo.nome_completo || 'Nome não disponível',
-                cliente_documento: clienteInfo.cpf_cnpj || 'Documento não disponível',
-                updated_at: credential.updated_at,
-                created_at: credential.created_at
-              });
-            }
-          }
-        }
+      if (!clientesRelacionados || clientesRelacionados.length === 0) {
+        console.log('Nenhum cliente vinculado a este contador');
+        return [];
       }
+      
+      // Extrair lista de IDs dos clientes
+      const clienteIds = clientesRelacionados.map(rel => rel.cliente_id);
+      console.log(`Encontrados ${clienteIds.length} clientes vinculados ao contador`);
+      
+      // Passo 2: Buscar as credenciais ativas desses clientes
+      const { data: credenciais, error: errorCredenciais } = await this.databaseService.supabase
+        .from('gov_credentials')
+        .select(`
+          id, 
+          cliente_id, 
+          credential_name, 
+          created_at, 
+          updated_at, 
+          is_active
+        `)
+        .in('cliente_id', clienteIds)
+        .eq('is_active', true);
+        
+      if (errorCredenciais) {
+        console.error('Erro ao buscar credenciais dos clientes:', errorCredenciais);
+        return [];
+      }
+      
+      // Caso não tenha credenciais, retornar array vazio
+      if (!credenciais || credenciais.length === 0) {
+        console.log('Nenhuma credencial encontrada para os clientes deste contador');
+        return [];
+      }
+      
+      console.log(`Encontradas ${credenciais.length} credenciais de clientes`);
+      
+      // Passo 3: Buscar informações dos clientes para enriquecer os dados
+      const { data: profiles, error: errorProfiles } = await this.databaseService.supabase
+        .from('profiles')
+        .select('id, nome_completo, cpf_cnpj')
+        .in('id', clienteIds);
+        
+      if (errorProfiles) {
+        console.error('Erro ao buscar perfis dos clientes:', errorProfiles);
+        // Continuar mesmo sem os perfis, apenas com IDs
+      }
+      
+      // Criar mapa de perfis por ID para fácil acesso
+      const profilesMap: Record<string, any> = {};
+      if (profiles) {
+        profiles.forEach(profile => {
+          profilesMap[profile.id] = profile;
+        });
+      }
+      
+      // Passo 4: Combinar os dados
+      const credentialsList = credenciais.map(credential => {
+        const clientProfile = profilesMap[credential.cliente_id] || null;
+        
+        return {
+          credential_id: credential.id,
+          credential_name: credential.credential_name,
+          cliente_id: credential.cliente_id,
+          cliente_nome: clientProfile ? clientProfile.nome_completo : 'Nome não disponível',
+          cliente_documento: clientProfile ? clientProfile.cpf_cnpj : 'Documento não disponível',
+          updated_at: credential.updated_at,
+          created_at: credential.created_at
+        };
+      });
       
       return credentialsList;
     } catch (error) {

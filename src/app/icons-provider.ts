@@ -30,7 +30,8 @@ import {
   UserAddOutline,
   DownloadOutline,
   ArrowLeftOutline,
-  DisconnectOutline
+  DisconnectOutline,
+  KeyOutline
 } from '@ant-design/icons-angular/icons';
 
 // Ícones que serão utilizados na aplicação
@@ -64,7 +65,8 @@ const icons = [
   UserAddOutline,
   DownloadOutline,
   ArrowLeftOutline,
-  DisconnectOutline
+  DisconnectOutline,
+  KeyOutline
 ];
 
 /**

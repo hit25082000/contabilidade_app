@@ -66,6 +66,39 @@ Erros de permissão ou tabelas não encontradas:
 SELECT * FROM pg_policies WHERE tablename = 'gov_credentials';
 ```
 
+### Erro em Relacionamentos de Tabelas
+
+Se você encontrar erros relacionados à consulta SQL que busca credenciais dos clientes:
+
+1. **Problema de relacionamentos de tabelas**: O método `getCredentialsForContador` pode falhar se os relacionamentos entre as tabelas não estiverem corretamente configurados ou se o modelo de dados for alterado.
+
+**Sintomas**:
+- Erro no console: `Cannot read properties of undefined (reading 'length')` 
+- Contador não consegue ver nenhuma credencial mesmo quando há credenciais cadastradas
+
+**Solução**:
+- Verifique o método `getCredentialsForContador` no serviço `GovCredentialsService`
+- A solução implementada utiliza uma abordagem em 3 passos para garantir consistência:
+  1. Buscar todas as relações contador-cliente
+  2. Buscar as credenciais dos clientes encontrados
+  3. Buscar os perfis dos clientes para exibir informações adicionais
+
+Exemplo de implementação correta:
+```typescript
+// Passo 1: Obter IDs dos clientes vinculados ao contador
+const { data: clientesRelacionados } = await this.databaseService.supabase
+  .from('contador_clientes')
+  .select('cliente_id')
+  .eq('contador_id', contadorId);
+
+// Passo 2: Extrair IDs e buscar credenciais
+const clienteIds = clientesRelacionados.map(rel => rel.cliente_id);
+const { data: credenciais } = await this.databaseService.supabase
+  .from('gov_credentials')
+  .select('*')
+  .in('cliente_id', clienteIds);
+```
+
 ## Depuração do Módulo
 
 Para ativar logs de depuração mais detalhados:

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { GovCredentialsService } from '../../../core/services/gov-credentials.service';
 import { IDecryptedCredential } from '../../../core/models/gov-credentials.model';
+import { AuthStore } from '../../../core/auth/service/auth.store';
 
 /**
  * Componente para o contador acessar as credenciais governamentais dos clientes
@@ -407,6 +408,7 @@ import { IDecryptedCredential } from '../../../core/models/gov-credentials.model
 })
 export class GovCredentialsAccessComponent implements OnInit {
   private govCredentialsService = inject(GovCredentialsService);
+  private authStore  = inject(AuthStore);
   
   clientCredentials: any[] = [];
   isLoading = true;
@@ -420,10 +422,13 @@ export class GovCredentialsAccessComponent implements OnInit {
   ngOnInit(): void {
     // Obter ID do contador da sessão
     // Em uma aplicação real, isso seria obtido do serviço de autenticação
-    // this.contadorId = this.authService.currentUser.value.id;
-    
+    this.contadorId = this.authStore.user()!.id;   
     // Carregar credenciais dos clientes
-    this.loadCredentials();
+
+    if(this.contadorId){
+      console.log(this.contadorId)
+      this.loadCredentials();
+    }
   }
   
   /**

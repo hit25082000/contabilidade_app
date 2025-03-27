@@ -17,6 +17,29 @@ import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { AuthStore } from '../../../core/auth/service/auth.store';
+
+/**
+ * Interface para os dados de credencial simplificados
+ */
+interface CredentialInfo {
+  id?: string;
+  credential_name: string;
+  cliente_id: string;
+  updated_at?: string;
+  created_at?: string;
+  is_active: boolean;
+}
+
+/**
+ * Interface para agrupar credenciais por cliente
+ */
+interface ClientCredentialGroup {
+  clientId: string;
+  clientName: string;
+  clientDocument: string;
+  credentials: CredentialInfo[];
+}
 
 /**
  * Componente para visualização de credenciais governamentais por contadores
@@ -70,7 +93,14 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
           <nz-card 
             *ngFor="let clientGroup of credentialsByClient()" 
             class="client-card"
-            [nzTitle]="clientGroup.clientName">
+            [nzTitle]="clientHeader">
+            
+            <ng-template #clientHeader>
+              <div>
+                <span>{{ clientGroup.clientName }}</span>
+                <span class="client-document">({{ clientGroup.clientDocument }})</span>
+              </div>
+            </ng-template>
             
             <nz-table
               #credentialsTable
@@ -137,6 +167,12 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
       font-weight: 500;
     }
     
+    .client-document {
+      font-size: 0.9em;
+      color: #8c8c8c;
+      margin-left: 8px;
+    }
+    
     /* Ajustes para telas pequenas */
     @media (max-width: 480px) {
       .page-header {
@@ -153,14 +189,18 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 })
 export class GovCredentialsViewComponent implements OnInit {
   private govCredentialsService = inject(GovCredentialsService);
+  private authStore = inject(AuthStore);
   private modalService = inject(NzModalService);
   
   // Signals
   isLoading = signal<boolean>(true);
   errorMessage = signal<string | null>(null);
   credentialsByClient = signal<ClientCredentialGroup[]>([]);
+  contadorId = "";
   
   ngOnInit(): void {
+    this.contadorId = this.authStore.user()!.id
+
     this.carregarCredenciais();
   }
   
@@ -172,10 +212,9 @@ export class GovCredentialsViewComponent implements OnInit {
     this.errorMessage.set(null);
     
     // ID temporário para simulação/desenvolvimento
-    const contadorId = '123e4567-e89b-12d3-a456-426614174000';
     
     // Usamos o método com Observable que retorna da mesma forma que outros métodos Angular
-    this.govCredentialsService.getCredentialsForContadorAsObservable(contadorId)
+    this.govCredentialsService.getCredentialsForContadorAsObservable(this.contadorId)
       .subscribe({
         next: (credenciais) => {
           // Agrupar credenciais por cliente
@@ -194,26 +233,31 @@ export class GovCredentialsViewComponent implements OnInit {
   /**
    * Agrupa credenciais por cliente
    */
-  private groupCredentialsByClient(credenciais: IGovCredentials[]): ClientCredentialGroup[] {
+  private groupCredentialsByClient(credenciais: any[]): ClientCredentialGroup[] {
     const groups: Record<string, ClientCredentialGroup> = {};
     
-    // Simula agrupamento - em produção, isso viria do backend
+    // Agrupar credenciais por cliente usando os dados enriquecidos
     credenciais.forEach(credential => {
       const clientId = credential.cliente_id;
       
       if (!groups[clientId]) {
-        // Extrair nome do cliente dos metadados da primeira credencial
-        // Em produção, teria uma API para obter o nome do cliente
-        const clientName = `Cliente ${clientId.substring(0, 6)}`;
-        
         groups[clientId] = {
           clientId,
-          clientName,
+          clientName: credential.cliente_nome || `Cliente ${clientId.substring(0, 6)}`,
+          clientDocument: credential.cliente_documento || 'Documento não disponível',
           credentials: []
         };
       }
       
-      groups[clientId].credentials.push(credential);
+      // Adicionar a credencial no grupo do cliente
+      groups[clientId].credentials.push({
+        id: credential.credential_id,
+        credential_name: credential.credential_name,
+        cliente_id: credential.cliente_id,
+        updated_at: credential.updated_at,
+        created_at: credential.created_at,
+        is_active: true
+      });
     });
     
     return Object.values(groups);
@@ -222,7 +266,7 @@ export class GovCredentialsViewComponent implements OnInit {
   /**
    * Extrai o tipo de credencial a partir do nome
    */
-  getCredentialType(credential: IGovCredentials): string {
+  getCredentialType(credential: CredentialInfo): string {
     // Tenta identificar o tipo pelo nome da credencial
     const name = credential.credential_name.toUpperCase();
     
@@ -238,13 +282,24 @@ export class GovCredentialsViewComponent implements OnInit {
   /**
    * Visualiza os detalhes de uma credencial
    */
-  viewCredential(credential: IGovCredentials): void {
+  viewCredential(credential: CredentialInfo): void {
     // Como o método requer o ID do contador, adicionamos um ID temporário
     const contadorId = '123e4567-e89b-12d3-a456-426614174000';
+    
+    // Exibir indicador de carregamento
+    const loadingModal = this.modalService.create({
+      nzTitle: 'Carregando credencial...',
+      nzContent: `<div style="text-align: center; padding: 20px;"><span nz-icon nzType="loading" nzTheme="outline" style="font-size: 24px;"></span></div>`,
+      nzFooter: null,
+      nzClosable: false,
+      nzMaskClosable: false
+    });
     
     this.govCredentialsService.decryptCredentialAsObservable(credential.id || '', contadorId)
       .subscribe({
         next: (decryptedCredential) => {
+          loadingModal.destroy(); // Fechar modal de carregamento
+          
           this.modalService.info({
             nzTitle: `Credencial: ${credential.credential_name}`,
             nzWidth: '500px',
@@ -253,10 +308,12 @@ export class GovCredentialsViewComponent implements OnInit {
           });
         },
         error: (error: any) => {
+          loadingModal.destroy(); // Fechar modal de carregamento
+          
           console.error('Erro ao descriptografar credencial:', error);
           this.modalService.error({
             nzTitle: 'Erro ao acessar credencial',
-            nzContent: 'Não foi possível descriptografar a credencial. Tente novamente mais tarde.'
+            nzContent: 'Não foi possível descriptografar a credencial. Verifique se você tem permissão para acessar esta informação ou entre em contato com o suporte técnico.'
           });
         }
       });
@@ -325,13 +382,4 @@ export class GovCredentialsViewComponent implements OnInit {
     
     return labelMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }
-}
-
-/**
- * Interface para agrupar credenciais por cliente
- */
-interface ClientCredentialGroup {
-  clientId: string;
-  clientName: string;
-  credentials: IGovCredentials[];
 } 
